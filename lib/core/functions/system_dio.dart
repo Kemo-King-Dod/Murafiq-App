@@ -16,7 +16,8 @@ class ApiService {
         receiveTimeout: const Duration(seconds: 10),
         validateStatus: (status) {
           // اعتبر الأكواد 200، 201، 400، 404 ناجحة
-          return status != null && [200, 201, 400, 404, 401].contains(status);
+          return status != null &&
+              [200, 201, 400, 404, 401, 403].contains(status);
         },
       ),
     );
@@ -29,8 +30,8 @@ class ApiService {
         retries: 3,
         retryDelays: [
           Duration(seconds: 1),
-          Duration(seconds: 2),
-          Duration(seconds: 3),
+          Duration(seconds: 1),
+          Duration(seconds: 1),
         ],
         retryEvaluator: (DioException e, int attempt) async {
           return e.type != DioExceptionType.cancel &&
@@ -65,7 +66,6 @@ class ApiService {
       } else {
         response = await _dio.get(endpoint,
             queryParameters: queryParameters, options: options);
-        print("response");
       }
 
       // التحقق من حالة الطلب
@@ -73,6 +73,7 @@ class ApiService {
           response.statusCode == 201 ||
           response.statusCode == 400 ||
           response.statusCode == 401 ||
+          response.statusCode == 403 ||
           response.statusCode == 404) {
         return response.data;
       } else {

@@ -1,4 +1,7 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:murafiq/customer/trip/controllers/trip_waiting_controller.dart';
+import 'package:murafiq/models/customer.dart';
+import 'package:murafiq/models/driver.dart';
 
 enum TripStatus {
   searching,
@@ -18,7 +21,13 @@ enum City {
   alQatrun, // القطرون
   alBakhi, // البخي
   alJinsiya, // الجنسية
-  qasrMasud // قصر مسعود
+  qasrMasud, // قصر مسعود
+  sabha // سبها
+}
+
+enum PaymentMethod {
+  cash,
+  wallet,
 }
 
 // امتداد لـ enum City لإضافة أسماء المدن بالعربية
@@ -33,6 +42,8 @@ extension CityExtension on City {
         return 'الجنسية';
       case City.qasrMasud:
         return 'قصر مسعود';
+      case City.sabha:
+        return 'سبها';
     }
   }
 
@@ -47,6 +58,8 @@ extension CityExtension on City {
         return const LatLng(24.5000, 14.5000); // الجنسية (إحداثيات تقريبية)
       case City.qasrMasud:
         return const LatLng(24.1500, 14.3500); // قصر مسعود (إحداثيات تقريبية)
+      case City.sabha:
+        return const LatLng(24.3000, 14.6000); // سبها (إحداثيات تقريبية)
     }
   }
 }
@@ -65,8 +78,14 @@ class Trip {
   final TripType tripType;
   final TripStatus status;
   final DateTime createdAt;
+  final Driver? driver; // معلومات السائق>
+  final Customer? customer; // معلومات الزبون>
+  PaymentMethod paymentMethod = PaymentMethod.cash;
+  final String? TripCode;
 
   Trip({
+    this.driver,
+    this.customer,
     this.id,
     required this.startCity,
     required this.destinationCity,
@@ -80,6 +99,8 @@ class Trip {
     required this.tripType,
     required this.status,
     required this.createdAt,
+    required this.paymentMethod,
+    this.TripCode,
   });
 
   // تحويل من JSON
@@ -118,12 +139,20 @@ class Trip {
         (e) => e.toString() == 'TripStatus.${json['status']}',
       ),
       createdAt: DateTime.parse(json['createdAt']),
+      customer:
+          json['customer'] != null ? Customer.fromJson(json['customer']) : null,
+      driver: json['driver'] != null ? Driver.fromJson(json['driver']) : null,
+      paymentMethod: PaymentMethod.values.firstWhere(
+        (e) => e.toString() == 'PaymentMethod.${json['paymentMethod']}',
+      ),
+      TripCode: json['TripCode'] ?? "no code",
     );
   }
 
   // تحويل إلى JSON
   Map<String, dynamic> toJson() {
     return {
+      // ignore: prefer_if_null_operators
       'id': id != null ? id : null,
       'startCity': startCity.toString().split('.').last,
       'destinationCity': destinationCity.toString().split('.').last,
@@ -147,6 +176,10 @@ class Trip {
       'tripType': tripType.toString().split('.').last,
       'status': status.toString().split('.').last,
       'createdAt': createdAt.toIso8601String(),
+      'customer': customer?.toJson(),
+      'driver': driver?.toJson(),
+      'paymentMethod': paymentMethod.toString().split('.').last,
+      'TripCode': TripCode,
     };
   }
 
@@ -165,6 +198,10 @@ class Trip {
     TripType? tripType,
     TripStatus? status,
     DateTime? createdAt,
+    Driver? driver,
+    Customer? customer,
+    PaymentMethod? paymentMethod,
+    String? TripCode,
   }) {
     return Trip(
       id: id ?? this.id,
@@ -180,6 +217,10 @@ class Trip {
       tripType: tripType ?? this.tripType,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
+      customer: customer,
+      driver: driver,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      TripCode: TripCode ?? this.TripCode,
     );
   }
 }

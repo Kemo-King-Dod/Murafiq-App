@@ -1,40 +1,140 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:murafiq/core/constant/citiesBoundries.dart';
+import 'package:murafiq/core/functions/is_point_inside_polygon.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
+import 'package:murafiq/models/trip.dart';
 
-class Gelocatorfun {
-  static Future<Position> getCurrentPosition() async {
-    
+class LocationService {
+  static AlertDialog dialog(String title, String message) {
+    return AlertDialog(
+      title: Text(title),
+      content: Text(message),
+    );
+  }
 
-    bool LocationEnabled;
+  static Future<Position?> getCurrentLocation() async {
+    bool serviceEnabled;
     LocationPermission permission;
 
-    LocationEnabled = await Geolocator.isLocationServiceEnabled();
+    try {
+      // التحقق من تفعيل خدمة الموقع
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
+        Get.snackbar(
+          'خطأ',
+          'الرجاء تفعيل خدمة الموقع',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return null;
+      }
 
-    if (!LocationEnabled) {
-      return Future.error('الرجاء تفعيل الموقع');
+      // التحقق من الأذونات
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+          Get.dialog(dialog('خطأ', 'لم يتم السماح بالوصول إلى الموقع'));
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
+        Get.dialog(dialog('خطأ', 'يرجى تفعيل إذن الموقع من إعدادات التطبيق'));
+        return null;
+      }
+
+      // الحصول على الموقع الحالي
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
+      );
+    } catch (e) {
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+      print("Error getting location: $e");
+      Get.dialog(dialog('خطأ', 'حدث خطأ أثناء الحصول على الموقع'));
+      return null;
+    }
+  }
+
+  static Future<bool> handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+      Get.snackbar(
+        'خطأ',
+        'الرجاء تفعيل خدمة الموقع',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false;
     }
 
     permission = await Geolocator.checkPermission();
-
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-
-      // Get the current location
       if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-
-        return Future.error('الرجاء السماح بالوصول الى الموقع');
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
+        Get.snackbar(
+          'خطأ',
+          'لم يتم السماح بالوصول إلى الموقع',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return false;
       }
-    } else if (permission == LocationPermission.deniedForever) {
-      return Future.error('الرجاء اعادة تثبيت التطبيق');
     }
 
-    return await Geolocator.getCurrentPosition();
+    if (permission == LocationPermission.deniedForever) {
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+      Get.snackbar(
+        'خطأ',
+        'يرجى تفعيل إذن الموقع من إعدادات التطبيق',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  static Future<String?> getCityName({double? lat, double? lng}) async {
+    if (isPointInsidePolygons(LatLng(lat!, lng!), Qatronboundaries)) {
+      return City.alQatrun.name;
+    }
+    if (isPointInsidePolygons(LatLng(lat, lng), Sebhaboundaries)) {
+      return City.sabha.name;
+    }
+    if (isPointInsidePolygons(LatLng(lat, lng), QasirMasaoodboundaries)) {
+      return City.qasrMasud.name;
+    }
+    if (isPointInsidePolygons(LatLng(lat, lng), Bakhiboundaries)) {
+      return City.alBakhi.name;
+    }
+    if (isPointInsidePolygons(LatLng(lat, lng), Aljensiaboundaries)) {
+      return City.alJinsiya.name;
+    }
+    return "OUT";
   }
 }

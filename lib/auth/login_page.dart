@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:murafiq/auth/forgot_password_page.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 import '../main.dart';
 import 'auth_controller.dart';
@@ -85,6 +86,13 @@ class LoginPage extends StatelessWidget {
                       }
                       return null;
                     },
+                  ),
+                  const SizedBox(height: 24),
+                  TextButton(
+                    onPressed: () {
+                      Get.to(()=> ForgotPasswordPage());
+                    },
+                    child: Text('هل نسيت كلمة المرور؟'),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(

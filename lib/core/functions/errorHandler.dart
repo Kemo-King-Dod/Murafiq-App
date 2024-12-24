@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:murafiq/core/functions/classes/loading_controller.dart';
 import 'package:murafiq/core/functions/system_dio.dart';
@@ -48,18 +49,50 @@ Future<T?> errorHandler<T>({
 
 Future<dynamic> sendRequestWithHandler({
   required String endpoint,
-  String method = 'GET',
+  String method = "GET",
+  String? loadingMessage,
   Map<String, dynamic>? body,
   Map<String, dynamic>? queryParameters,
-  String? loadingMessage,
 }) async {
-  return await errorHandler<dynamic>(
-    operation: () => ApiService().sendRequest(
+  final loadingController = Get.find<LoadingController>();
+
+  try {
+    if (loadingMessage != null) {
+      loadingController.showLoading(message: loadingMessage);
+    }
+
+    final response = await ApiService().sendRequest(
       endpoint: endpoint,
       method: method,
       body: body,
       queryParameters: queryParameters,
-    ),
-    loadingMessage: loadingMessage,
-  );
+    );
+
+    if (loadingMessage != null) {
+      loadingController.hideLoading();
+    }
+
+    if (response != null) {
+      return response;
+    } else {
+      throw FlutterError("لا توجد بيانات");
+    }
+  } catch (e) {
+    if (loadingMessage != null) {
+      loadingController.hideLoading();
+    }
+
+    // تأخير قصير قبل عرض رسالة الخطأ
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    Get.snackbar(
+      "خطأ",
+      e.toString(),
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+
+    throw FlutterError(e.toString());
+  }
 }

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:murafiq/core/constant/citiesBoundries.dart';
+import 'package:murafiq/core/functions/is_point_inside_polygon.dart';
+import 'package:murafiq/models/trip.dart';
 import '../../../core/utils/systemVarible.dart';
 import '../../../core/utils/text_styles.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,6 +29,7 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
 
   int _currentFeatureIndex = 0;
   Timer? _timer;
+  City? _selectedExternalCity;
 
   @override
   void initState() {
@@ -45,20 +51,48 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
     });
   }
 
-  Future<void> _handleLocalTripSelection() async {
+  Future<void> _handleLocalTripSelection({String cityTo = ''}) async {
     try {
+      systemUtils.loadingPop("جاري تحديد موقعك", canPop: true);
       // استخدام الدالة الجديدة لتحديد الموقع
-      Position position = await Gelocatorfun.getCurrentPosition();
 
-      // انتقل إلى صفحة الخريطة مع الموقع
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LocalTripMapPage(
+      Position? position = await LocationService.getCurrentLocation();
+      if (position != null) {
+        // استخدام الموقع
+
+        LatLng currentPosition = LatLng(position.latitude, position.longitude);
+        String currentCity = '';
+
+        if (isPointInsidePolygons(currentPosition, Qatronboundaries)) {
+          currentCity = City.alQatrun.arabicName;
+        } else if (isPointInsidePolygons(currentPosition, Bakhiboundaries)) {
+          currentCity = City.alBakhi.arabicName;
+        } else if (isPointInsidePolygons(
+            currentPosition, QasirMasaoodboundaries)) {
+          currentCity = City.qasrMasud.arabicName;
+        } else if (isPointInsidePolygons(currentPosition, Aljensiaboundaries)) {
+          currentCity = City.alJinsiya.arabicName;
+        } else if (isPointInsidePolygons(currentPosition, Sebhaboundaries)) {
+          currentCity = City.sabha.arabicName;
+        } else {
+          Get.back();
+          // Handle case when location is not in any known boundary
+          _showLocationErrorDialog(
+              'موقعك الحالي غير مدعوم سنظيفه قريبا باذن الله');
+          return;
+        }
+        Get.back();
+        // انتقل إلى صفحة الخريطة مع الموقع
+        Get.to(
+          () => LocalTripMapPage(
             initialPosition: position,
+            city: currentCity,
+            cityTo: cityTo.isNotEmpty ? cityTo : currentCity,
           ),
-        ),
-      );
+        );
+      } else {
+        print('error');
+      }
     } catch (e) {
       // عرض رسالة خطأ في حالة فشل تحديد الموقع
       _showLocationErrorDialog(e.toString());
@@ -71,8 +105,8 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            'خطأ في تحديد الموقع',
-            style: AppTextStyles.h3.copyWith(color: systemColors.error),
+            "موقعك الحالي غير مدعوم",
+            style: AppTextStyles.h3.copyWith(color: systemColors.primary),
             textAlign: TextAlign.center,
           ),
           content: Text(
@@ -96,6 +130,93 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
         );
       },
     );
+  }
+
+  void _showExternalTripCitySelector() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'اختر وجهتك',
+                style: AppTextStyles.h3.copyWith(
+                  color: systemColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: systemColors.primary.withOpacity(0.2),
+                    width: 1.5,
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<City>(
+                    isExpanded: true,
+                    hint: Text(
+                      'اختر المدينة',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: systemColors.primary.withOpacity(0.7),
+                      ),
+                    ),
+                    value: _selectedExternalCity,
+                    icon: Icon(
+                      Icons.location_city_rounded,
+                      color: systemColors.primary,
+                    ),
+                    items: City.values.map((City city) {
+                      return DropdownMenuItem<City>(
+                        value: city,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_rounded,
+                              color: systemColors.primary.withOpacity(0.7),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              city.arabicName,
+                              style: AppTextStyles.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (City? newValue) {
+                      setState(() {
+                        _selectedExternalCity = newValue;
+                      });
+                      Navigator.pop(context);
+                      if (newValue != null) {
+                        _handleExternalTripSelection(newValue);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleExternalTripSelection(City selectedCity) {
+    _handleLocalTripSelection(cityTo: selectedCity.arabicName);
   }
 
   @override
@@ -228,9 +349,7 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () {
-                      // TODO: Handle external trip selection
-                    },
+                    onTap: _showExternalTripCitySelector,
                     borderRadius: BorderRadius.circular(15),
                     splashColor: systemColors.primary.withOpacity(0.1),
                     highlightColor: systemColors.primaryGoust.withOpacity(0.2),

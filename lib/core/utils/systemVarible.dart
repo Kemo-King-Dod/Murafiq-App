@@ -106,7 +106,7 @@ class systemColors {
 }
 
 class systemUtils {
-  static loadingPop(String title) {
+  static loadingPop(String title, {bool canPop = false}) {
     Get.dialog(
         barrierDismissible: false,
         PopScope(
@@ -142,49 +142,11 @@ class systemUtils {
               ),
             ),
           ),
-          canPop: true,
+          canPop: canPop,
         ));
   }
 
-  static loadingNotPop(String title) {
-    Get.dialog(
-        barrierDismissible: false,
-        PopScope(
-          child: Directionality(
-            textDirection: TextDirection.rtl,
-            child: AlertDialog(
-              contentPadding: EdgeInsets.all(20),
-              backgroundColor: systemColors.white,
-              content: SizedBox(
-                height: 150,
-                width: 150,
-                child: Column(
-                  children: [
-                    SizedBox(height: 20),
-                    Center(
-                      child: SpinKitWave(
-                        itemCount: 4,
-                        color: systemColors
-                            .primary, // يمكنك تغيير اللون حسب تفضيلك
-                        size: 40.0,
-                        duration: Duration(
-                          seconds: 1,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      title.tr,
-                      style: systemTextStyle.mediumDark,
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ),
-          canPop: false,
-        ));
-  }
+  static loadingNotPop(String title) {}
 
   static blockingNotPop(String title) {
     Get.dialog(

@@ -4,32 +4,22 @@ import 'package:get/get_core/get_core.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
+import 'package:murafiq/customer/public/screens/customer_home_page.dart';
+import 'package:murafiq/main.dart';
+import 'package:murafiq/models/driver.dart';
 import 'package:murafiq/models/trip.dart';
-
-class tripDriver {
-  final String? name;
-  final String? phone;
-  final String? carNumber;
-  tripDriver({this.name, this.phone, this.carNumber});
-  factory tripDriver.fromJson(Map<String, dynamic> json) {
-    return tripDriver(
-      name: json['name'],
-      phone: json['phone'],
-      carNumber: json['carNumber'],
-    );
-  }
-}
 
 class TripWaitingController extends GetxController {
   final trip = Rxn<Trip>();
   final currentStatus = TripStatus.searching.obs;
   Timer? _statusCheckTimer;
-  final driver = Rxn<tripDriver>();
+  final driver = Rxn<Driver>();
 
   @override
   void onInit() {
     super.onInit();
     startStatusChecking();
+    shared!.setBool("has_active_trip", true);
   }
 
   @override
@@ -55,17 +45,20 @@ class TripWaitingController extends GetxController {
         method: 'GET',
       );
       print(response.toString());
-
       if (response != null && response['data'] != null) {
         final updatedTrip = Trip.fromJson(response['data']['trip']);
         trip.value = updatedTrip;
         currentStatus.value = updatedTrip.status;
-        driver.value = tripDriver.fromJson(response['data']['trip']['driver']);
+        driver.value = updatedTrip.driver;
         // إيقاف التحقق إذا وصلت الرحلة إلى حالة نهائية
         if (updatedTrip.status == TripStatus.completed ||
             updatedTrip.status == TripStatus.cancelled ||
             updatedTrip.status == TripStatus.rejected) {
           _statusCheckTimer?.cancel();
+          if (updatedTrip.status == TripStatus.completed) {
+            shared!.setBool("has_active_trip", false);
+            Get.offAll(CustomerHomePage());
+          }
         }
       }
     } catch (e) {
@@ -75,15 +68,23 @@ class TripWaitingController extends GetxController {
 
   Future<void> cancelTrip() async {
     try {
+      print('cancel');
       final response = await sendRequestWithHandler(
-        endpoint: '/trips/${trip.value?.id}/cancel',
+        endpoint: '/trips/customer/${trip.value?.id}/cancel',
         method: 'PATCH',
         loadingMessage: 'جاري إلغاء الرحلة...',
       );
-
-      if (response != null) {
+      print(response.toString());
+      if (response != null && response['status'] == 'success') {
         currentStatus.value = TripStatus.cancelled;
         Get.back();
+      } else {
+        Get.snackbar(
+          "",
+          response["message"].toString(),
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+        );
       }
     } catch (e) {
       print('Error cancelling trip: $e');
