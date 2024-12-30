@@ -66,8 +66,8 @@ extension CityExtension on City {
 
 class Trip {
   String? id;
-  final City startCity;
-  final City destinationCity;
+  final String startCity;
+  final String destinationCity;
   final LatLng? startLocation; // موقع محدد من قبل الزبون
   final LatLng? destinationLocation; // موقع محدد من قبل الزبون
   final double distance;
@@ -107,12 +107,8 @@ class Trip {
   factory Trip.fromJson(Map<String, dynamic> json) {
     return Trip(
       id: json['id'],
-      startCity: City.values.firstWhere(
-        (e) => e.toString() == 'City.${json['startCity']}',
-      ),
-      destinationCity: City.values.firstWhere(
-        (e) => e.toString() == 'City.${json['destinationCity']}',
-      ),
+      startCity: json['startCity'],
+      destinationCity: json['destinationCity'],
       startLocation: json['startLocation'] != null
           ? LatLng(
               double.parse(json['startLocation']['latitude'].toString()),
@@ -186,8 +182,8 @@ class Trip {
   // إنشاء نسخة جديدة مع تحديث بعض الخصائص
   Trip copyWith({
     String? id,
-    City? startCity,
-    City? destinationCity,
+    String? startCity,
+    String? destinationCity,
     LatLng? startLocation,
     LatLng? destinationLocation,
     double? distance,

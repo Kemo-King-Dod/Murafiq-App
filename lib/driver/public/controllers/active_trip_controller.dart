@@ -95,4 +95,10 @@ class ActiveTripController extends GetxController {
       }
     }
   }
+
+  @override
+  void onClose() {
+    _statusCheckTimer?.cancel();
+    super.onClose();
+  }
 }

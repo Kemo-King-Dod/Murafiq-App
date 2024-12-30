@@ -299,12 +299,12 @@ class _TripsManagementPageState extends State<TripsManagementPage> {
       children: [
         _buildDetailRowIcon(
           Icons.location_on_outlined,
-          'من: ${trip.startCity.arabicName.toString().split('.').last}',
+          'من: ${trip.startCity}',
         ),
         SizedBox(height: 8),
         _buildDetailRowIcon(
           Icons.location_on,
-          'إلى: ${trip.destinationCity.arabicName.toString().split('.').last}',
+          'إلى: ${trip.destinationCity}',
         ),
         SizedBox(height: 16),
         _buildInfoChip(
@@ -512,18 +512,10 @@ class _TripsManagementPageState extends State<TripsManagementPage> {
                         ),
                         SizedBox(height: 16),
                         _buildDetailRow('رقم الرحلة', trip.id ?? 'غير محدد'),
-                        _buildDetailRow(
-                            'المدينة المصدر',
-                            trip.startCity.arabicName
-                                .toString()
-                                .split('.')
-                                .last),
-                        _buildDetailRow(
-                            'المدينة الوجهة',
-                            trip.destinationCity.arabicName
-                                .toString()
-                                .split('.')
-                                .last),
+                        _buildDetailRow('المدينة المصدر',
+                            trip.startCity.toString().split('.').last),
+                        _buildDetailRow('المدينة الوجهة',
+                            trip.destinationCity.toString().split('.').last),
                         _buildDetailRow(
                             'نوع الرحلة',
                             trip.tripType == TripType.intercity

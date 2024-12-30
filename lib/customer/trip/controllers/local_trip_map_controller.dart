@@ -3,8 +3,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
+import 'package:murafiq/core/functions/is_point_inside_polygon.dart';
 import 'package:murafiq/core/services/api_service.dart';
 import 'package:murafiq/customer/trip/screens/trip_waiting_page.dart';
+import 'package:murafiq/models/city.dart';
 import 'package:murafiq/models/trip.dart';
 import '../../../core/utils/systemVarible.dart';
 
@@ -15,11 +17,13 @@ class LocalTripMapController extends GetxController {
     required this.city,
     required this.cityTo,
   });
+  final cityAndBoundaryController = Get.find<CityAndBoundaryController>();
 
   // Initial position and city details
   final Position initialPosition;
-  final String city;
-  final String cityTo;
+  final CityAndBoundary city;
+  final CityAndBoundary cityTo;
+  Set<Polygon> Boundries = {};
 
   // Reactive map-related variables
   final Rx<LatLng> _currentPosition = Rx<LatLng>(const LatLng(0, 0));
@@ -44,6 +48,20 @@ class LocalTripMapController extends GetxController {
       initialPosition.latitude,
       initialPosition.longitude,
     );
+    Boundries = {
+      Polygon(
+          polygonId: PolygonId(city.Arabicname),
+          points: city.boundary,
+          fillColor: systemColors.primary.withValues(alpha: 0.1),
+          strokeColor: systemColors.primary,
+          strokeWidth: 1),
+      Polygon(
+          polygonId: PolygonId(cityTo.Arabicname),
+          points: cityTo.boundary,
+          fillColor: systemColors.sucsses.withValues(alpha: 0.1),
+          strokeColor: systemColors.sucsses,
+          strokeWidth: 1),
+    };
 
     // Add initial current location marker
     _addCurrentLocationMarker();
@@ -70,7 +88,8 @@ class LocalTripMapController extends GetxController {
   // Setup markers and polyline for inter-city trips
   void _setupInterCityTrip() {
     if (cityTo != city) {
-      LatLng targetPoint = _getTargetPointForCity(cityTo);
+      // LatLng targetPoint = _getTargetPointForCity(cityTo);
+      LatLng targetPoint = cityTo.center;
 
       // Add destination marker
       markers.add(
@@ -115,7 +134,7 @@ class LocalTripMapController extends GetxController {
   void onMapTap(LatLng tappedPoint) {
     // Remove existing destination marker
     markers.removeWhere((marker) => marker.markerId.value == 'destination');
-
+    if (!isPointInsidePolygons(tappedPoint, cityTo.boundary.toSet())) return;
     // Add new destination marker
     markers.add(
       Marker(
@@ -169,15 +188,20 @@ class LocalTripMapController extends GetxController {
         _companyFee.value = 3;
       }
     } else {
-      if (cityTo == City.alQatrun.arabicName &&
-          city == City.alBakhi.arabicName) {
-        _tripPrice.value = 15;
-        _companyFee.value = 3;
-      }
-      if (cityTo == City.alQatrun.arabicName && city == City.sabha.arabicName) {
-        _tripPrice.value = 15;
-        _companyFee.value = 3;
-      }
+      _tripPrice.value =
+          cityAndBoundaryController.calculatePriceToDiffrentCities(
+              city: city.Englishname, cityTo: cityTo.Englishname);
+      _companyFee.value = 5.0;
+
+      // if (cityTo == City.alQatrun.arabicName &&
+      //     city == City.alBakhi.arabicName) {
+      //   _tripPrice.value = 15;
+      //   _companyFee.value = 3;
+      // }
+      // if (cityTo == City.alQatrun.arabicName && city == City.sabha.arabicName) {
+      //   _tripPrice.value = 15;
+      //   _companyFee.value = 3;
+      // }
     }
   }
 
@@ -215,13 +239,12 @@ class LocalTripMapController extends GetxController {
 
     // Create trip object
     final trip = Trip(
-      startCity: City.values.firstWhere((cityN) => cityN.arabicName == city),
-      destinationCity:
-          City.values.firstWhere((cityN) => cityN.arabicName == cityTo),
+      startCity: city.Arabicname,
+      destinationCity: cityTo.Arabicname,
       startLocation: _currentPosition.value,
       destinationLocation: _selectedDestination.value,
       distance: _tripDistance.value,
-      estimatedTime: _tripDistance.value.ceil().toInt() * 4,
+      estimatedTime: (_tripDistance.value / 10).ceil() * 10, // Minutes
       price: _tripPrice.value,
       companyFee: _companyFee.value,
       driverType: _selectedDriverType.value,
@@ -230,7 +253,6 @@ class LocalTripMapController extends GetxController {
       createdAt: DateTime.now(),
       paymentMethod: _selectedPaymentMethod.value,
     );
-
     try {
       // Send trip request to backend
       final response = await sendRequestWithHandler(

@@ -115,7 +115,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                     Expanded(
                       child: trip.startCity != trip.destinationCity
                           ? Text(
-                              'رحلة من ${trip.startCity.arabicName} إلى ${trip.destinationCity.arabicName}',
+                              'رحلة من ${trip.startCity} إلى ${trip.destinationCity}',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -340,7 +340,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                   textColor: Colors.green.shade900,
                 )
               : _buildInfoItem(Clarity.organization_line,
-                  "المدينة \n ${trip.startCity.arabicName}",
+                  "المدينة \n ${trip.startCity}",
                   iconColor: Colors.blue.shade600,
                   textColor: Colors.blue.shade900),
         ],

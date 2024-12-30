@@ -33,21 +33,22 @@ class DriverHomePage extends StatefulWidget {
 
 class _DriverHomePageState extends State<DriverHomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final RxBool isAvailable = true.obs;
+  final RxBool isAvailable = false.obs;
   final RxList<Trip> availableTrips = <Trip>[].obs;
   Timer? _tripCheckTimer;
   String? city;
+  StreamSubscription<Position>? _locationSubscription;
+  LatLng? currentPosition;
 
   @override
   void initState() {
     super.initState();
-    checkInternetAndProceed();
-    _startTripChecking();
   }
 
   @override
   void dispose() {
     _tripCheckTimer?.cancel();
+    _locationSubscription?.cancel();
     super.dispose();
   }
 
@@ -65,17 +66,19 @@ class _DriverHomePageState extends State<DriverHomePage> {
   void checkAcceptedTrip() async {
     print("checkAcceptedTrip");
     print(shared!.getBool("driver_has_active_trip"));
-    if (shared!.getBool("driver_has_active_trip") == true) {
+    var hasActiveTrip = shared!.getBool("driver_has_active_trip");
+    if (hasActiveTrip == true) {
       try {
         final response = await sendRequestWithHandler(
             endpoint: '/trips/driver/status',
             method: 'GET',
             loadingMessage: "جاري فحص حالة الرحلة");
-        print(response.toString());
         if (response != null && response['data'] != null) {
+          print(response.toString());
           final acceptedTrip = Trip.fromJson(response['data']['trip']);
+          print(acceptedTrip.status.toString());
           if (acceptedTrip.status == TripStatus.accepted ||
-              acceptedTrip.status == TripStatus.driverFound) {
+              acceptedTrip.status == TripStatus.arrived) {
             Get.offAll(() => ActiveTripPage(trip: acceptedTrip));
           } else if (acceptedTrip.status == TripStatus.completed ||
               acceptedTrip.status == TripStatus.cancelled) {
@@ -95,11 +98,11 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
   // بدء التحقق من الرحلات
   void _startTripChecking() async {
-    var times = 0;
+    await checkInternetAndProceed();
     if (await Geolocator.isLocationServiceEnabled()) {
       // بدء تتبع الموقع باستخدام Geolocator
       if (await Geolocator.checkPermission() == LocationPermission.denied) {
-        Geolocator.requestPermission();
+        await Geolocator.requestPermission();
       } else if (await Geolocator.checkPermission() ==
           LocationPermission.deniedForever) {
         Get.dialog(
@@ -108,65 +111,73 @@ class _DriverHomePageState extends State<DriverHomePage> {
             content: Text("يرجى تفعيل الموقع للتطبيق"),
           ),
         );
+        return;
       }
 
-      Geolocator.getPositionStream(
+      _locationSubscription = Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
           distanceFilter: 1,
         ),
-      ).handleError((error) {
-        print("Location Stream Error: $error");
-        Get.snackbar(
-          'خطأ',
-          'حدث خطأ في تتبع الموقع',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }).listen((Position position) async {
+      ).listen((Position position) async {
         try {
+          currentPosition = LatLng(position.latitude, position.longitude);
           if (isAvailable.value) {
             String? newCity = await LocationService.getCityName(
                 lat: position.latitude, lng: position.longitude);
-            print("newCity: $newCity");
             if (city == null) {
-              print("city is null");
               city = newCity;
-              _checkForTrips();
+              _checkForTrips(currentPosition);
             } else if (newCity != city) {
               city = newCity;
-              print("city changed");
-              _checkForTrips();
-            } else {
-              times++;
-              print("times: $times");
+              _checkForTrips(currentPosition);
             }
 
-            if (times > 3) {
-              times = 0;
-              _checkForTrips();
-            }
+            // تحديث موقع السائق في الباك اند
+            // TODO: أضف كود تحديث موقع السائق
           }
         } catch (e) {
           print("Error in location stream: $e");
+        }
+      });
+
+      // بدء التحقق الدوري من الرحلات
+      _tripCheckTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+        if (isAvailable.value && city != null) {
+          _checkForTrips(currentPosition);
         }
       });
     } else {
       Get.dialog(
         AlertDialog(
           title: Text("خطأ"),
-          content: Text("يرجى تفعيل الموقع للتطبيق"),
+          content: Text("يرجى تفعيل خدمة الموقع في جهازك"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Get.back();
+                Geolocator.openLocationSettings();
+              },
+              child: Text("فتح الإعدادات"),
+            ),
+          ],
         ),
       );
     }
   }
 
+  // إيقاف تتبع الموقع والبحث عن الرحلات
+  void _stopTripChecking() {
+    _tripCheckTimer?.cancel();
+    _locationSubscription?.cancel();
+    availableTrips.clear();
+  }
+
   // التحقق من وجود رحلات متاحة
-  Future<void> _checkForTrips() async {
+  Future<void> _checkForTrips(LatLng? currentPosition) async {
     if (!isAvailable.value) return;
 
-    final trips = await TripService.getAvailableTrips(city: city);
+    final trips = await TripService.getAvailableTrips(city: city,point: currentPosition);
     availableTrips.value = trips;
     print(availableTrips.length);
   }
@@ -323,7 +334,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              trip.startCity.arabicName,
+                              trip.startCity,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -373,7 +384,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              trip.destinationCity.arabicName,
+                              trip.destinationCity,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -643,7 +654,14 @@ class _DriverHomePageState extends State<DriverHomePage> {
                         value: isAvailable.value,
                         onChanged: (value) {
                           isAvailable.value = value;
-                          // TODO: تحديث حالة السائق في الباك اند
+                          if (isAvailable.value) {
+                            // TODO: تحديث حالة السائق في الباك اند
+                            checkInternetAndProceed();
+                            _startTripChecking();
+                          } else {
+                            _stopTripChecking();
+                            // TODO: تحديث حالة السائق في الباك اند
+                          }
                         },
                         activeColor: systemColors.primary,
                         activeTrackColor: systemColors.primary.withOpacity(0.5),

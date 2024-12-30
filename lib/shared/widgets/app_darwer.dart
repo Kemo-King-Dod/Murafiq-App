@@ -61,7 +61,7 @@ class AppDarwer {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                shared!.getString("userName").toString(),
+                                shared!.getString("user_name").toString(),
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20,
@@ -70,7 +70,7 @@ class AppDarwer {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                shared!.getString("userPhone").toString(),
+                                shared!.getString("user_phone").toString(),
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.9),
                                   fontSize: 14,

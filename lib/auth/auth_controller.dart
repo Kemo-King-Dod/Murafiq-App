@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:murafiq/admin/screens/admin_dashboard.dart';
 import 'package:murafiq/core/constant/Constatnt.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
+import 'package:murafiq/core/services/notification_service.dart';
 import 'package:murafiq/main.dart';
 import '../customer/public/screens/customer_home_page.dart';
 import '../driver/public/screens/driver_home_page.dart';
@@ -21,7 +22,13 @@ class AuthController extends GetxController {
 
   Future<void> login(String phone, String password) async {
     try {
-      String fcm_token = shared!.getString("fcm_token")!;
+      String? fcm_token = shared!.getString("fcm_token");
+      if (fcm_token == null) {
+        // Get new FCM token if not available
+        final notificationService = Get.find<NotificationService>();
+        fcm_token = await notificationService.getAndSaveFCMToken();
+      }
+
       final response = await sendRequestWithHandler(
         endpoint: '/auth/login',
         method: 'POST',
@@ -32,42 +39,89 @@ class AuthController extends GetxController {
         },
         loadingMessage: 'جاري تسجيل الدخول...',
       );
-      print(response);
-      // Check response status
+
       if (response['status'] == 'success') {
-        // Store user type from response
-        userType.value = response['data']['user']['type'];
-        shared!.setString("userName", response['data']['user']['name']);
-        shared!.setString("userPhone", response['data']['user']['phone']);
-        isLoggedIn.value = true;
-
-        // Store token
-        if (response['token'] != null) {
-          final token = response['token'];
-          shared!.setString("token", token);
-        }
-
-        // Navigate based on user type
-        if (userType.value == 'customer') {
-          Get.offAll(() => const CustomerHomePage());
-        } else if (userType.value == 'driver') {
-          Get.offAll(() => DriverHomePage());
-        } else if (userType.value == 'admin') {
-          Get.offAll(() => AdminDashboardPage());
-        }
+        await _handleSuccessfulLogin(response);
       } else {
         throw Exception(response['message'] ?? 'فشل تسجيل الدخول');
       }
     } catch (e) {
-      // Error handling is done in ApiService
       isLoggedIn.value = false;
       Get.snackbar(
         'خطأ',
         e.toString(),
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    }
+  }
+
+  Future<void> _handleSuccessfulLogin(Map<String, dynamic> response) async {
+    try {
+      // Store user data
+      userType.value = response['data']['user']['type'];
+      shared!.setString("user_type", userType.value);
+      shared!.setString("user_phone", response['data']['user']['phone']);
+      shared!.setString("user_id", response['data']['user']['id'].toString());
+      shared!.setString("user_name", response['data']['user']['name']);
+      
+      // Store token
+      if (response['token'] != null) {
+        final token = response['token'];
+        shared!.setString("token", token);
+      }
+
+      isLoggedIn.value = true;
+
+      // Navigate based on user type
+      _navigateBasedOnUserType();
+    } catch (e) {
+      print("Error handling login success: $e");
+      throw Exception('حدث خطأ أثناء معالجة تسجيل الدخول');
+    }
+  }
+
+  void _navigateBasedOnUserType() {
+    switch (userType.value) {
+      case 'customer':
+        Get.offAllNamed('/customer-home');
+        break;
+      case 'driver':
+        Get.offAllNamed('/driver-home');
+        break;
+      case 'admin':
+        Get.offAllNamed('/admin-dashboard');
+        break;
+      default:
+        Get.offAllNamed('/login');
+    }
+  }
+
+  Future<bool> autoLogin() async {
+    try {
+      final token = shared!.getString('token');
+      final savedUserType = shared!.getString('user_type');
+      
+      if (token != null && savedUserType != null) {
+        // Verify token with server
+        final response = await sendRequestWithHandler(
+          endpoint: '/auth/verify-token',
+          method: 'POST',
+          body: {"token": token},
+          loadingMessage: 'جاري التحقق...',
+        );
+
+        if (response['status'] == 'success') {
+          userType.value = savedUserType;
+          isLoggedIn.value = true;
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      print("Auto login error: $e");
+      return false;
     }
   }
 
@@ -176,34 +230,57 @@ class AuthController extends GetxController {
           body: body,
           loadingMessage: 'جاري إنشاء الحساب...',
         );
+        if (response != null) {
+          // Check response status
+          if (response['status'] == 'success') {
+            // Store user type and data
+            userType.value = response['data']['user']['type'];
+            isLoggedIn.value = true;
 
-        // Check response status
-        if (response['status'] == 'success') {
-          // Store user type and data
-          userType.value = response['data']['user']['type'];
-          isLoggedIn.value = true;
+            // Store token
+            if (response['token'] != null) {
+              final token = response['token'];
+              shared!.setString("token", token);
+            }
 
-          // Store token
-          if (response['token'] != null) {
-            final token = response['token'];
-            shared!.setString("token", token);
+            // Navigate based on user type
+            if (userType.value == 'customer') {
+              Get.offAll(() => const CustomerHomePage());
+            } else if (userType.value == 'driver') {
+              // TODO: Navigate to driver home page
+              Get.offAll(() => DriverHomePage());
+            }
+          } else {
+            throw Exception(response['message'] ?? 'حدث خطأ في عملية التسجيل');
           }
-
-          // Navigate based on user type
-          if (userType.value == 'customer') {
-            Get.offAll(() => const CustomerHomePage());
-          } else if (userType.value == 'driver') {
-            // TODO: Navigate to driver home page
-            Get.offAll(() => DriverHomePage());
-          }
-        } else {
-          throw Exception(response['message'] ?? 'حدث خطأ في عملية التسجيل');
         }
       }
     } catch (e) {
       isLoggedIn.value = false;
       // Error handling is done in ApiService
       rethrow; // Rethrow to allow error handling in the UI
+    }
+  }
+
+  Future<void> forgetPassword({required String phone}) async {
+    try {
+      final response = await ApiService.request(
+        endpoint: '/auth/for',
+        method: 'POST',
+        body: {
+          'phone': phone,
+        },
+        loadingMessage: 'جاري استعادة كلمة المرور...',
+      );
+
+      // Check response status
+      if (response['status'] == 'success') {
+        Get.offAll(() => LoginPage());
+      } else {
+        throw Exception(response['message'] ?? 'فشل استعادة كلمة المرور');
+      }
+    } catch (e) {
+      // Error handling is done in ApiService
     }
   }
 
@@ -219,6 +296,11 @@ class AuthController extends GetxController {
       // userType.value = '';
       // // TODO: Clear stored token
       shared!.remove("token");
+      shared!.remove("user_type");
+      shared!.remove("user_id");
+      shared!.remove("user_name");
+      shared!.remove("fcm_token");
+      
 
       Get.offAll(() => LoginPage());
     } catch (e) {

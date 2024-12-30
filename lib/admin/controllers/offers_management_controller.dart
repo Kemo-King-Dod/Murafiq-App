@@ -256,9 +256,32 @@ class OffersManagementController extends GetxController {
     update(["offerImage"]);
   }
 
-  void removeOffer(String offerId) {
-    _offers.removeWhere((offer) => offer.id == offerId);
-    _filteredOffers.removeWhere((offer) => offer.id == offerId);
+  void removeOffer(String offerId) async {
+    final response = await sendRequestWithHandler(
+      endpoint: '/admin/remove_offer',
+      method: 'DELETE',
+      body: {
+        'offerId': offerId,
+      },
+    );
+    if (response != null && response['status'] == 'success') {
+      Get.snackbar(
+        'نجاح',
+        'تم حذف الإعلان بنجاح',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+      fetchOffers();
+      Get.back();
+    } else {
+      Get.snackbar(
+        'خطاء',
+        'حدث خطاء',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      fetchOffers();
+    }
   }
 
   void updateOffer(Offer updatedOffer) {

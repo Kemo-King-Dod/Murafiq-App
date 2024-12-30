@@ -58,6 +58,17 @@ class NotificationService {
       },
     );
 
+    // Get initial token
+    await getAndSaveFCMToken();
+
+    // Listen for token refresh
+    _firebaseMessaging.onTokenRefresh.listen((String newToken) async {
+      print('FCM Token refreshed: $newToken');
+      await saveFCMToken(newToken);
+      // Here you might want to send the new token to your server
+      // await _sendTokenToServer(newToken);
+    });
+
     // Configure foreground message handling
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("Received foreground message");

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:murafiq/auth/driver_signup_page.dart';
+import 'package:murafiq/core/utils/systemVarible.dart';
 import '../main.dart';
 import 'auth_controller.dart';
 import 'login_page.dart';
@@ -573,7 +575,27 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                       style: TextStyle(fontSize: 16),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      Get.to(() => DriverSignupPage());
+                    },
+                    child: Text(
+                      "انشاء حساب سائق",
+                      style: systemTextStyle.smallPrimary,
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: systemColors.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

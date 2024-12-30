@@ -12,7 +12,7 @@ import '../main.dart';
 import 'auth_controller.dart';
 import 'login_page.dart';
 
-class ResendTimerController extends GetxController {
+class DResendTimerController extends GetxController {
   RxInt countdown = 0.obs;
   Timer? _timer;
 
@@ -55,8 +55,8 @@ class _DriverSignupPageState extends State<DriverSignupPage> {
       TextEditingController();
   String selectedGender = 'male'; // Default value
   File? identityImageFile; // File to store uploaded driver's license image
-  final ResendTimerController _timerController =
-      Get.put(ResendTimerController());
+  final DResendTimerController _timerController =
+      Get.put(DResendTimerController());
   String? _storedOTP;
 
   Future<void> _pickIdentityImage() async {
@@ -393,42 +393,44 @@ class _DriverSignupPageState extends State<DriverSignupPage> {
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: _pickIdentityImage,
-                        child: Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey[300]!),
-                          ),
-                          child: identityImageFile != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.file(
-                                    identityImageFile!,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                  ),
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.cloud_upload,
-                                      color: Colors.grey[600],
-                                      size: 50,
+                      Center(
+                        child: GestureDetector(
+                          onTap: _pickIdentityImage,
+                          child: Container(
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: identityImageFile != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.file(
+                                      identityImageFile!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'اضغط لرفع صورة رخصة القيادة',
-                                      style: TextStyle(
+                                  )
+                                : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.cloud_upload,
                                         color: Colors.grey[600],
-                                        fontSize: 14,
+                                        size: 50,
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'اضغط لرفع صورة رخصة القيادة',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
                         ),
                       ),
                     ],

@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:murafiq/admin/screens/admin_dashboard.dart';
+import 'package:murafiq/auth/OnboardingPage.dart';
+import 'package:murafiq/auth/customer_signup_page.dart';
 import 'package:murafiq/core/functions/classes/loading_controller.dart';
+import 'package:murafiq/core/locale/LocaleController.dart';
+import 'package:murafiq/core/middleware/auth_middleware.dart';
+import 'package:murafiq/core/screens/splash_screen.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
+import 'package:murafiq/customer/public/screens/customer_home_page.dart';
+import 'package:murafiq/driver/public/screens/driver_home_page.dart';
+import 'package:murafiq/models/city.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
-import 'customer/public/screens/customer_home_page.dart';
 import 'auth/login_page.dart';
 import 'auth/auth_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,6 +21,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'package:murafiq/core/services/notification_service.dart';
 import 'auth/forgot_password_page.dart';
+import 'package:flutter/services.dart';
 
 SharedPreferences? shared;
 
@@ -24,6 +34,17 @@ class AppColors {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
+  // Set preferred orientations
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // Set system UI overlay style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
 
   // Initialize Firebase
   await Firebase.initializeApp(
@@ -59,6 +80,7 @@ void main() async {
 
   // Initialize AuthController
   Get.put(AuthController());
+  Get.put(CityAndBoundaryController(), permanent: true);
   Get.put(LoadingController(), permanent: true);
   Get.put(notificationService, permanent: true);
 
@@ -66,21 +88,20 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final localeController = Get.put(Localecontroller(), permanent: true);
+    FlutterNativeSplash.remove();
     return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Murafiq',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          primary: AppColors.primary,
-          secondary: AppColors.secondary,
-        ),
+        primaryColor: AppColors.primary,
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,
         fontFamily: 'Tajawal',
-        primaryColor: AppColors.primary,
         scaffoldBackgroundColor: Colors.white,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -107,12 +128,21 @@ class MyApp extends StatelessWidget {
               fontSize: 12, fontWeight: FontWeight.w400, letterSpacing: 1.5),
         ),
       ),
-      home: LoginPage(),
-      locale: const Locale('ar', 'SA'),
+      locale: localeController.initialLang,
       textDirection: TextDirection.rtl,
+      home: const SplashScreen(),
       getPages: [
+        GetPage(
+          name: '/start',
+          middlewares: [AuthMiddleware()],
+          page: () => OnboardingPage(),
+        ),
         GetPage(name: '/login', page: () => LoginPage()),
         GetPage(name: '/forgot-password', page: () => ForgotPasswordPage()),
+        GetPage(name: '/customer-signup', page: () => CustomerSignupPage()),
+        GetPage(name: '/customer-home', page: () => CustomerHomePage()),
+        GetPage(name: '/driver-home', page: () => DriverHomePage()),
+        GetPage(name: '/admin-dashboard', page: () => AdminDashboardPage()),
       ],
     );
   }

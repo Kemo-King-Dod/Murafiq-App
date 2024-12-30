@@ -6,6 +6,8 @@ import 'package:murafiq/core/utils/systemVarible.dart';
 class LoadingController extends GetxController {
   RxBool isLoading = false.obs;
   String? _currentDialogName;
+  bool canPop = false;
+  bool barrir = false;
 
   /// عرض نافذة اللودينغ
   void showLoading({String? message}) {
@@ -26,7 +28,7 @@ class LoadingController extends GetxController {
 
       Get.dialog(
         PopScope(
-          canPop: false,
+          canPop: canPop,
           child: Directionality(
             textDirection: TextDirection.rtl,
             child: AlertDialog(
@@ -58,13 +60,17 @@ class LoadingController extends GetxController {
           ),
         ),
         name: _currentDialogName,
-        barrierDismissible: false,
+        barrierDismissible: barrir,
       );
     }
+    Future.delayed(Duration(seconds: 10), () {
+      canPop = true;
+      barrir = true;
+    });
   }
 
   /// إخفاء نافذة اللودينغ
-  void hideLoading() {
+  Future<void> hideLoading() async {
     if (isLoading.value) {
       isLoading.value = false;
 
@@ -79,7 +85,7 @@ class LoadingController extends GetxController {
       _currentDialogName = null;
 
       // تأخير قصير قبل السماح بعرض snackbar جديد
-      Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 300));
     }
   }
 

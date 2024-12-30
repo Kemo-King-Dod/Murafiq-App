@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/services/api_service.dart';
 import 'package:murafiq/core/services/local_storage_service.dart';
@@ -9,14 +10,14 @@ import 'package:murafiq/driver/public/screens/active_trip_page.dart';
 class TripService {
   // جلب الرحلات المتاحة للسائق
   static Future<List<Trip>> getAvailableTrips(
-      {String? city}) async {
-
+      {String? city, LatLng? point}) async {
     try {
       final response = await sendRequestWithHandler(
         endpoint: '/trips/driver/available',
         method: 'POST',
         body: {
           'city': city,
+          'point': {"latitude": point!.latitude, "longitude": point.longitude},
         },
       );
 
@@ -115,6 +116,7 @@ class TripService {
         method: 'PATCH',
         loadingMessage: 'جاري إنهاء الرحلة...',
       );
+      print(response.toString());
       if (response != null) {
         if (response['status'] == 'success') {
           Get.snackbar(

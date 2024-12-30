@@ -201,7 +201,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   ),
                   const SizedBox(width: 15),
                   Text(
-                    "مرافق",
+                    "مُرافق",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,

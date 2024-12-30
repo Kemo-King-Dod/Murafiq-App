@@ -369,7 +369,7 @@ class OffersMangementPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => Get.back(),
+                            onPressed: () => _controller.removeOffer(offer.id),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: systemColors.error,
                               shape: RoundedRectangleBorder(

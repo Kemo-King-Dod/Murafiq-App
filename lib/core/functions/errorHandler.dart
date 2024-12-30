@@ -69,7 +69,7 @@ Future<dynamic> sendRequestWithHandler({
     );
 
     if (loadingMessage != null) {
-      loadingController.hideLoading();
+     await loadingController.hideLoading();
     }
 
     if (response != null) {

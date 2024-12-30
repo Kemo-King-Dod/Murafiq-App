@@ -16,7 +16,7 @@ class ActiveTripPage extends GetView<ActiveTripController> {
   @override
   Widget build(BuildContext context) {
     Get.put(ActiveTripController(trip: trip.obs));
-    final RxBool isCodeVerified = false.obs;
+    final RxBool isCodeVerified = trip.status == TripStatus.arrived ? true.obs : false.obs;
     final codeController = TextEditingController();
 
     return Scaffold(
@@ -42,7 +42,6 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                   ),
                 if (controller.personIcon != null)
                   Marker(
-                    
                     markerId: const MarkerId('destination'),
                     position: trip.destinationLocation!,
                     icon: controller.personIcon.value,
@@ -202,13 +201,13 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                           _buildInfoRow(
                             Icons.location_on,
                             'نقطة الانطلاق',
-                            trip.startCity.arabicName,
+                            trip.startCity,
                           ),
                           const Divider(height: 20),
                           _buildInfoRow(
                             Icons.flag,
                             'الوجهة',
-                            trip.destinationCity.arabicName,
+                            trip.destinationCity,
                           ),
                           const Divider(height: 20),
                           _buildInfoRow(
@@ -424,6 +423,7 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                                     onPressed: () async {
                                       // التحقق من رمز الرحلة
                                       final enteredCode = codeController.text;
+                                      
                                       final success = await TripService
                                           .verifyTripCodeAndUpdateStatus(
                                               trip.id!, enteredCode);

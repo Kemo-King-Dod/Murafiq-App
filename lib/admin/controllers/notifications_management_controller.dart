@@ -108,6 +108,7 @@ class NotificationsManagementController extends GetxController {
           ? notification.specificTargetPhone
           : null,
     };
+
     final response = await sendRequestWithHandler(
       endpoint: '/admin/notifications',
       method: 'POST',

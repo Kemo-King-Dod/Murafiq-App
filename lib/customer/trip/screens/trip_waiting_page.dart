@@ -7,7 +7,6 @@ import 'package:murafiq/models/driver.dart';
 import 'package:murafiq/models/trip.dart';
 import '../../../core/utils/systemVarible.dart';
 import '../../../core/utils/text_styles.dart';
-import 'package:lottie/lottie.dart';
 import '../controllers/trip_waiting_controller.dart';
 
 class TripWaitingPage extends StatefulWidget {

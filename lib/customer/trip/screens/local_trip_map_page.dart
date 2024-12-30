@@ -5,12 +5,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/core/utils/text_styles.dart';
 import 'package:murafiq/customer/trip/controllers/local_trip_map_controller.dart';
+import 'package:murafiq/models/city.dart';
 import 'package:murafiq/models/trip.dart';
 
 class LocalTripMapPage extends GetView<LocalTripMapController> {
   final Position initialPosition;
-  final String city;
-  final String cityTo;
+  final CityAndBoundary city;
+  final CityAndBoundary cityTo;
 
   const LocalTripMapPage({
     Key? key,
@@ -38,6 +39,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
             width: Get.width,
             height: Get.height,
             child: Obx(() => GoogleMap(
+              
                   initialCameraPosition: CameraPosition(
                     target: controller.cityTo == controller.city
                         ? controller.currentPosition
@@ -55,6 +57,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                       ? controller.onMapTap
                       : null,
                   myLocationButtonEnabled: false,
+                  polygons:controller.Boundries,
                   onMapCreated: (mapController) {
                     controller.mapController = mapController;
 
