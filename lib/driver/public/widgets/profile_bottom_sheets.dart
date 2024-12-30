@@ -220,6 +220,7 @@ class ChangePasswordBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DriverProfileController>();
     return Container(
       padding: EdgeInsets.all(20),
       height: Get.height * 0.5,
@@ -257,8 +258,8 @@ class ChangePasswordBottomSheet extends StatelessWidget {
                 if (value == null || value.isEmpty) {
                   return 'الرجاء إدخال كلمة المرور الجديدة';
                 }
-                if (value.length < 8) {
-                  return 'يجب أن تكون كلمة المرور 8 أحرف على الأقل';
+                if (value.length < 6) {
+                  return 'يجب أن تكون كلمة المرور 6 أحرف على الأقل';
                 }
                 return null;
               },
@@ -280,9 +281,21 @@ class ChangePasswordBottomSheet extends StatelessWidget {
             ),
             SizedBox(height: 25),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   // TODO: Implement actual password change logic
+                  final response = await sendRequestWithHandler(
+                    endpoint: '/public/update-password',
+                    method: 'PATCH',
+                    loadingMessage: "جاري تحديث كلمة المرور",
+                    body: {
+                      'new_password': _newPasswordController.text,
+                      'confirm_password': _confirmPasswordController.text,
+                      'current_password': _currentPasswordController.text,
+                    },
+                  );
+                  print(response.toString());
+
                   Get.back();
                   Get.snackbar(
                     'نجاح',
