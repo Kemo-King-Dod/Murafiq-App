@@ -16,7 +16,8 @@ class ActiveTripPage extends GetView<ActiveTripController> {
   @override
   Widget build(BuildContext context) {
     Get.put(ActiveTripController(trip: trip.obs));
-    final RxBool isCodeVerified = trip.status == TripStatus.arrived ? true.obs : false.obs;
+    final RxBool isCodeVerified =
+        trip.status == TripStatus.arrived ? true.obs : false.obs;
     final codeController = TextEditingController();
 
     return Scaffold(
@@ -105,7 +106,7 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, -5),
                     ),
@@ -136,7 +137,7 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                         borderRadius: BorderRadius.circular(15),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             spreadRadius: 1,
                           ),
@@ -180,7 +181,7 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                         borderRadius: BorderRadius.circular(15),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             spreadRadius: 1,
                           ),
@@ -368,7 +369,7 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                                 borderRadius: BorderRadius.circular(15),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withValues(alpha: 0.05),
                                     blurRadius: 10,
                                     spreadRadius: 1,
                                   ),
@@ -402,7 +403,7 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                                         borderRadius: BorderRadius.circular(10),
                                         borderSide: BorderSide(
                                             color: systemColors.primary
-                                                .withOpacity(0.5)),
+                                                .withValues(alpha: 0.5)),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
@@ -423,7 +424,7 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                                     onPressed: () async {
                                       // التحقق من رمز الرحلة
                                       final enteredCode = codeController.text;
-                                      
+
                                       final success = await TripService
                                           .verifyTripCodeAndUpdateStatus(
                                               trip.id!, enteredCode);

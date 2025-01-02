@@ -292,7 +292,7 @@ class _DriverSignupPageState extends State<DriverSignupPage> {
                                           BoxShadow(
                                             color: Theme.of(context)
                                                 .primaryColor
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                             blurRadius: 8,
                                             offset: const Offset(0, 4),
                                           ),
@@ -344,7 +344,7 @@ class _DriverSignupPageState extends State<DriverSignupPage> {
                                           BoxShadow(
                                             color: Theme.of(context)
                                                 .primaryColor
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                             blurRadius: 8,
                                             offset: const Offset(0, 4),
                                           ),
@@ -531,7 +531,8 @@ class _DriverSignupPageState extends State<DriverSignupPage> {
                                     borderRadius: BorderRadius.circular(20),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.grey.withOpacity(0.2),
+                                        color:
+                                            Colors.grey.withValues(alpha: 0.2),
                                         spreadRadius: 3,
                                         blurRadius: 7,
                                         offset: const Offset(0, 3),

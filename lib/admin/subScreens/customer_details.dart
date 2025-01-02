@@ -72,7 +72,7 @@ class CustomerDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -85,9 +85,10 @@ class CustomerDetails extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 40,
-              backgroundColor: systemColors.primary.withOpacity(0.1),
+              backgroundColor: systemColors.primary.withValues(alpha: 0.1),
               backgroundImage: customer.profileImage != null
-                  ? NetworkImage("${serverConstant.serverUrl}${customer.profileImage}")
+                  ? NetworkImage(
+                      "${serverConstant.serverUrl}${customer.profileImage}")
                   : null,
               child: customer.profileImage == null
                   ? Icon(
@@ -170,7 +171,7 @@ class CustomerDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -234,7 +235,7 @@ class CustomerDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -282,7 +283,8 @@ class CustomerDetails extends StatelessWidget {
               controller.showConfirmationDialog(
                 title: 'حظر المستخدم',
                 message: 'هل أنت متأكد من حظر هذا المستخدم؟',
-                onConfirm: () => controller.updateCustomerStatus(CustomerStatus.blocked),
+                onConfirm: () =>
+                    controller.updateCustomerStatus(CustomerStatus.blocked),
               );
             },
           ),
@@ -295,7 +297,8 @@ class CustomerDetails extends StatelessWidget {
               controller.showConfirmationDialog(
                 title: 'فك حظر المستخدم',
                 message: 'هل أنت متأكد من فك حظر هذا المستخدم؟',
-                onConfirm: () => controller.updateCustomerStatus(CustomerStatus.active),
+                onConfirm: () =>
+                    controller.updateCustomerStatus(CustomerStatus.active),
               );
             },
           ),

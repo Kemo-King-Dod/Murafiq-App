@@ -129,7 +129,7 @@ class _TripsManagementPageState extends State<TripsManagementPage> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide(
-                  color: systemColors.primary.withOpacity(0.3),
+                  color: systemColors.primary.withValues(alpha: 0.3),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -194,7 +194,7 @@ class _TripsManagementPageState extends State<TripsManagementPage> {
             Icon(
               Bootstrap.map,
               size: 100,
-              color: systemColors.primary.withOpacity(0.5),
+              color: systemColors.primary.withValues(alpha: 0.5),
             ),
             SizedBox(height: 16),
             Text(
@@ -237,7 +237,7 @@ class _TripsManagementPageState extends State<TripsManagementPage> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: _getStatusColor(trip.status).withOpacity(0.3),
+              color: _getStatusColor(trip.status).withValues(alpha: 0.3),
               blurRadius: 10,
               spreadRadius: 2,
               offset: Offset(0, 5),

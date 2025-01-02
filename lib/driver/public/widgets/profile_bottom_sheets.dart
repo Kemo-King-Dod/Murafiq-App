@@ -138,7 +138,7 @@ class EditProfileBottomSheet extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 70,
-            backgroundColor: systemColors.primary.withOpacity(0.1),
+            backgroundColor: systemColors.primary.withValues(alpha: 0.1),
             backgroundImage: controller.profileImageUrl.value.isNotEmpty
                 ? NetworkImage(controller.profileImageUrl.value)
                 : null,

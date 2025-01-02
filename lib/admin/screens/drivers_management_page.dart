@@ -140,7 +140,7 @@ class _DriversManagementPageState extends State<DriversManagementPage> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide(
-                  color: systemColors.primary.withOpacity(0.3),
+                  color: systemColors.primary.withValues(alpha: 0.3),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -205,7 +205,7 @@ class _DriversManagementPageState extends State<DriversManagementPage> {
             Icon(
               Bootstrap.car_front,
               size: 100,
-              color: systemColors.primary.withOpacity(0.5),
+              color: systemColors.primary.withValues(alpha: 0.5),
             ),
             SizedBox(height: 16),
             Text(
@@ -248,7 +248,7 @@ class _DriversManagementPageState extends State<DriversManagementPage> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: _getStatusColor(driver.status).withOpacity(0.3),
+              color: _getStatusColor(driver.status).withValues(alpha: 0.3),
               blurRadius: 10,
               spreadRadius: 2,
               offset: Offset(0, 5),
@@ -369,7 +369,7 @@ class _DriversManagementPageState extends State<DriversManagementPage> {
         ),
         boxShadow: [
           BoxShadow(
-            color: _getStatusColor(driver.status).withOpacity(0.5),
+            color: _getStatusColor(driver.status).withValues(alpha: 0.5),
             blurRadius: 10,
             spreadRadius: 2,
           ),

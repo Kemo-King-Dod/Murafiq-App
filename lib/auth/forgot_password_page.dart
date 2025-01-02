@@ -38,7 +38,7 @@ class ForgotPasswordPage extends StatelessWidget {
                         labelText: 'رقم الهاتف',
                         labelStyle: TextStyle(color: Colors.white),
                         filled: true,
-                        fillColor: Colors.black.withOpacity(0.5),
+                        fillColor: Colors.black.withValues(alpha: 0.5),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

@@ -73,10 +73,10 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              systemColors.white.withOpacity(0.1),
-                              systemColors.primary.withOpacity(0.2),
-                              systemColors.primary.withOpacity(0.1),
-                              systemColors.white.withOpacity(0.1),
+                              systemColors.white.withValues(alpha: 0.1),
+                              systemColors.primary.withValues(alpha: 0.2),
+                              systemColors.primary.withValues(alpha: 0.1),
+                              systemColors.white.withValues(alpha: 0.1),
                             ],
                           ),
                         ),
@@ -109,14 +109,14 @@ class DriverProfilePage extends GetView<DriverProfileController> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            systemColors.primary.withOpacity(0.7),
-            systemColors.primary.withOpacity(0.9),
+            systemColors.primary.withValues(alpha: 0.7),
+            systemColors.primary.withValues(alpha: 0.9),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: systemColors.primary.withOpacity(0.3),
+            color: systemColors.primary.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -136,7 +136,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             spreadRadius: 2,
                             blurRadius: 5,
                           ),
@@ -284,13 +284,13 @@ class DriverProfilePage extends GetView<DriverProfileController> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            primaryColor.withOpacity(0.7),
-            primaryColor.withOpacity(0.9),
+            primaryColor.withValues(alpha: 0.7),
+            primaryColor.withValues(alpha: 0.9),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.3),
+            color: primaryColor.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -339,14 +339,14 @@ class DriverProfilePage extends GetView<DriverProfileController> {
           end: Alignment.bottomRight,
           colors: [
             systemColors.dark,
-            systemColors.dark.withOpacity(0.8),
-            systemColors.dark.withOpacity(0.9),
+            systemColors.dark.withValues(alpha: 0.8),
+            systemColors.dark.withValues(alpha: 0.9),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: systemColors.primary.withOpacity(0.1),
+            color: systemColors.primary.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -389,22 +389,22 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                       value: controller.totalTrips.value.toString(),
                       gradient: LinearGradient(
                         colors: [
-                          Colors.indigo.withOpacity(0.7),
-                          Colors.indigo.withOpacity(0.9),
+                          Colors.indigo.withValues(alpha: 0.7),
+                          Colors.indigo.withValues(alpha: 0.9),
                         ],
                       ),
                     ),
                     userType == UserType.driver
                         ? _buildEnhancedStatItem(
-                            color: systemColors.sucsses.withOpacity(0.5),
+                            color: systemColors.sucsses.withValues(alpha: 0.5),
                             icon: Icons.monetization_on,
                             label: 'إجمالي الأرباح',
                             value:
                                 '${controller.totalEarnings.value.toStringAsFixed(2)} د.ل',
                             gradient: LinearGradient(
                               colors: [
-                                systemColors.sucsses.withOpacity(0.7),
-                                systemColors.sucsses.withOpacity(0.9),
+                                systemColors.sucsses.withValues(alpha: 0.7),
+                                systemColors.sucsses.withValues(alpha: 0.9),
                               ],
                             ),
                           )
@@ -431,7 +431,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -445,7 +445,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
               padding: EdgeInsets.all(12),
               child: Icon(
@@ -489,7 +489,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(

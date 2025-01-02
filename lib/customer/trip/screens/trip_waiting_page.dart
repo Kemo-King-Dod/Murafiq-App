@@ -13,11 +13,9 @@ class TripWaitingPage extends StatefulWidget {
   final Trip trip;
   final ScrollController scrollcontroller;
 
-  const TripWaitingPage({
-    Key? key,
-    required this.trip,
-   required this.scrollcontroller
-  }) : super(key: key);
+  const TripWaitingPage(
+      {Key? key, required this.trip, required this.scrollcontroller})
+      : super(key: key);
 
   @override
   _TripWaitingPageState createState() => _TripWaitingPageState();
@@ -34,532 +32,520 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (bool didPop, Object? resulte) {
-            if (didPop) return;
-            if (controller.currentStatus.value == TripStatus.searching ||
-                controller.currentStatus.value == TripStatus.accepted) {
-              Get.defaultDialog(
-                title: 'تنبيه',
-                titleStyle: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: systemColors.primary,
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? resulte) {
+        if (didPop) return;
+        if (controller.currentStatus.value == TripStatus.searching ||
+            controller.currentStatus.value == TripStatus.accepted) {
+          Get.defaultDialog(
+            title: 'تنبيه',
+            titleStyle: AppTextStyles.bodyLarge.copyWith(
+              fontWeight: FontWeight.bold,
+              color: systemColors.primary,
+            ),
+            middleText: "هل تريد الغاء الرحلة",
+            middleTextStyle: AppTextStyles.bodyMedium,
+            confirm: ElevatedButton(
+              onPressed: () {
+                Get.back();
+                controller.cancelTrip();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: systemColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                middleText: "هل تريد الغاء الرحلة",
-                middleTextStyle: AppTextStyles.bodyMedium,
-                confirm: ElevatedButton(
-                  onPressed: () {
-                    Get.back();
-                    controller.cancelTrip();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: systemColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: Text(
-                    'حسناً',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                cancel: ElevatedButton(
-                  onPressed: () => Get.back(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: systemColors.error,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text('لا'),
-                ),
-              );
-            } else {
-              Get.back();
-            }
-          },
-          child: Container(
-            color: systemColors.white,
-            child: CustomScrollView(
-              controller:widget.scrollcontroller ,
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverAppBar(
-                  centerTitle: true,
-                  pinned: false,
-                  elevation: 0,
-                  backgroundColor: systemColors.primary,
-                  expandedHeight: 110,
-                  flexibleSpace: FlexibleSpaceBar(
-                    expandedTitleScale: 1.5,
-                    stretchModes: const [
-                      StretchMode.zoomBackground,
-                    ],
-                    background: Container(
-                      padding: const EdgeInsets.only(top: 10, bottom: 20),
+              ),
+              child: Text(
+                'حسنا',
+              ),
+            ),
+            cancel: ElevatedButton(
+              onPressed: () => Get.back(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: systemColors.error,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('لا'),
+            ),
+          );
+        } else {
+          Get.back();
+        }
+      },
+      child: Container(
+        color: systemColors.white,
+        child: CustomScrollView(
+          controller: widget.scrollcontroller,
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              centerTitle: true,
+              pinned: false,
+              elevation: 0,
+              backgroundColor: systemColors.primary,
+              expandedHeight: 50,
+              flexibleSpace: FlexibleSpaceBar(
+                expandedTitleScale: 1.5,
+                stretchModes: const [
+                  StretchMode.zoomBackground,
+                ],
+                background: Container(
+                  decoration: BoxDecoration(
                       color: systemColors.primary,
-                    ),
-                    centerTitle: true,
-                    titlePadding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 10),
-                    title: Text(
-                      textAlign: TextAlign.center,
-                      'متابعة الرحلة',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 2,
-                            color: Colors.black.withOpacity(0.3),
-                            offset: const Offset(1, 1),
+                      borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.only(top: 10, bottom: 20),
+                ),
+                centerTitle: true,
+                titlePadding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                title: Text(
+                  textAlign: TextAlign.center,
+                  'متابعة الرحلة',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 2,
+                        color: Colors.black.withValues(alpha: 0.3),
+                        offset: const Offset(1, 1),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              leading: Container(),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(20),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.all(16.0),
+              sliver: SliverToBoxAdapter(
+                child: Obx(() {
+                  final trip = controller.trip.value;
+                  final Driver? driver = controller.driver.value;
+                  if (trip == null) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            color: systemColors.primary,
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            'جاري تحميل معلومات الرحلة...',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  leading: Container(),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(20),
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.all(16.0),
-                  sliver: SliverToBoxAdapter(
-                    child: Obx(() {
-                      final trip = controller.trip.value;
-                      final Driver? driver = controller.driver.value;
-                      if (trip == null) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(
-                                color: systemColors.primary,
+                    );
+                  }
+
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWideScreen = constraints.maxWidth > 600;
+                      final cardPadding = isWideScreen ? 25.0 : 20.0;
+                      final fontSize = isWideScreen ? 20.0 : 18.0;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // حالة الرحلة
+                          Hero(
+                            tag: 'trip_status',
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              margin: const EdgeInsets.only(bottom: 25),
+                              padding: EdgeInsets.symmetric(
+                                vertical: cardPadding,
+                                horizontal: cardPadding * 1.2,
                               ),
-                              const SizedBox(height: 20),
-                              Text(
-                                'جاري تحميل معلومات الرحلة...',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: Colors.grey[600],
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    _getStatusColor(
+                                        controller.currentStatus.value),
+                                    _getStatusColor(
+                                            controller.currentStatus.value)
+                                        .withValues(alpha: 0.8),
+                                  ],
+                                  begin: Alignment.topRight,
+                                  end: Alignment.bottomLeft,
                                 ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _getStatusColor(
+                                            controller.currentStatus.value)
+                                        .withValues(alpha: 0.4),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      return LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isWideScreen = constraints.maxWidth > 600;
-                          final cardPadding = isWideScreen ? 25.0 : 20.0;
-                          final fontSize = isWideScreen ? 20.0 : 18.0;
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // حالة الرحلة
-                              Hero(
-                                tag: 'trip_status',
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 300),
-                                  margin: const EdgeInsets.only(bottom: 25),
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: cardPadding,
-                                    horizontal: cardPadding * 1.2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        _getStatusColor(
-                                            controller.currentStatus.value),
-                                        _getStatusColor(
-                                                controller.currentStatus.value)
-                                            .withOpacity(0.8),
-                                      ],
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: _getStatusColor(
-                                                controller.currentStatus.value)
-                                            .withOpacity(0.4),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 8),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      _getStatusIcon(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _getStatusIcon(
+                                      controller.currentStatus.value),
+                                  const SizedBox(width: 15),
+                                  Flexible(
+                                    child: Text(
+                                      _getStatusMessage(
                                           controller.currentStatus.value),
-                                      const SizedBox(width: 15),
-                                      Flexible(
-                                        child: Text(
-                                          _getStatusMessage(
-                                              controller.currentStatus.value),
-                                          style:
-                                              AppTextStyles.bodyLarge.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: fontSize,
-                                          ),
-                                        ),
+                                      style: AppTextStyles.bodyLarge.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: fontSize,
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
-
-                              // بطاقة معلومات الرحلة
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                padding: EdgeInsets.all(cardPadding),
-                                margin:
-                                    const EdgeInsets.symmetric(vertical: 15),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.15),
-                                      blurRadius: 15,
-                                      spreadRadius: 2,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    _buildTripInfoRow(
-                                      Icons.person,
-                                      'نوع السائق',
-                                      trip.driverType == DriverType.male
-                                          ? 'سائق'
-                                          : 'سائقة',
-                                      systemColors.primary,
-                                    ),
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 15),
-                                      child: Divider(height: 1),
-                                    ),
-                                    _buildTripInfoRow(
-                                      Icons.route,
-                                      'المسافة',
-                                      '${trip.distance.toStringAsFixed(2)} كم',
-                                      Colors.blue[700]!,
-                                    ),
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 15),
-                                      child: Divider(height: 1),
-                                    ),
-                                    _buildTripInfoRow(
-                                      Icons.attach_money,
-                                      'التكلفة',
-                                      '${trip.price.toStringAsFixed(2)} دينار',
-                                      Colors.green[600]!,
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 25),
-                              Obx(
-                                () => controller.driver.value != null
-                                    ? // معلومات السائق
-                                    _buildDriverDetailsCard(
-                                        controller.driver.value!)
-                                    : const SizedBox(),
-                              ),
-                              // معلومات السائق
-                              // _buildDriverDetailsCard(driver),
-                              // معلومات السائق
-                              // _buildDriverDetailsCard(Driver(
-                              //     carNumber: "123",
-                              //     name: "kamal",
-                              //     gender: "male",
-                              //     idNumber: "123",
-                              //     phone: "123")),
-                              const SizedBox(height: 25),
-
-                              // بطاقة طريقة الدفع
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                margin:
-                                    const EdgeInsets.symmetric(vertical: 15),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          systemColors.primary.withOpacity(0.1),
-                                      blurRadius: 15,
-                                      spreadRadius: 2,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: systemColors.primary
-                                                .withOpacity(0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Icon(
-                                            Icons.payment_rounded,
-                                            color: systemColors.primary,
-                                            size: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 15),
-                                        Text(
-                                          'طريقة الدفع',
-                                          style:
-                                              AppTextStyles.bodyLarge.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 20),
-                                    trip.paymentMethod == PaymentMethod.cash
-                                        ? Container(
-                                            padding: const EdgeInsets.all(15),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[50],
-                                              borderRadius:
-                                                  BorderRadius.circular(15),
-                                              border: Border.all(
-                                                color: Colors.grey[200]!,
-                                                width: 1,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.money,
-                                                  color: Colors.green[600],
-                                                  size: 28,
-                                                ),
-                                                const SizedBox(width: 15),
-                                                Text(
-                                                  'الدفع نقداً',
-                                                  style: AppTextStyles.bodyLarge
-                                                      .copyWith(
-                                                    color: Colors.black87,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                const Spacer(),
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 6,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.green[50],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20),
-                                                  ),
-                                                  child: Text(
-                                                    'مفعل',
-                                                    style: AppTextStyles
-                                                        .bodySmall
-                                                        .copyWith(
-                                                      color: Colors.green[600],
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        : Container(
-                                            padding: const EdgeInsets.all(15),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[50],
-                                              borderRadius:
-                                                  BorderRadius.circular(15),
-                                              border: Border.all(
-                                                color: Colors.grey[200]!,
-                                                width: 1,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.wallet,
-                                                  color: Colors.blue[600],
-                                                  size: 28,
-                                                ),
-                                                const SizedBox(width: 15),
-                                                Text(
-                                                  'من المحفظة',
-                                                  style: AppTextStyles.bodyLarge
-                                                      .copyWith(
-                                                    color: Colors.black87,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                const Spacer(),
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 6,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.blue[50],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20),
-                                                  ),
-                                                  child: Text(
-                                                    'مفعل',
-                                                    style: AppTextStyles
-                                                        .bodySmall
-                                                        .copyWith(
-                                                      color: Colors.blue[600],
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 25),
-
-                              // زر إلغاء الرحلة
-                              if (controller.currentStatus.value ==
-                                      TripStatus.searching ||
-                                  controller.currentStatus.value ==
-                                      TripStatus.driverFound)
-                                Container(
-                                  width: double.infinity,
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 15),
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      if (controller.currentStatus.value ==
-                                              TripStatus.searching ||
-                                          controller.currentStatus.value ==
-                                              TripStatus.accepted) {
-                                        Get.defaultDialog(
-                                          title: 'تنبيه',
-                                          titleStyle:
-                                              AppTextStyles.bodyLarge.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: systemColors.primary,
-                                          ),
-                                          middleText: "هل تريد الغاء الرحلة",
-                                          middleTextStyle:
-                                              AppTextStyles.bodyMedium,
-                                          confirm: ElevatedButton(
-                                            onPressed: () {
-                                              Get.back();
-                                              controller.cancelTrip();
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  systemColors.primary,
-                                              foregroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              'حسناً',
-                                              style: AppTextStyles.bodyMedium
-                                                  .copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          cancel: ElevatedButton(
-                                            onPressed: () => Get.back(),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  systemColors.error,
-                                              foregroundColor: Colors.white,
-                                            ),
-                                            child: Text('لا'),
-                                          ),
-                                        );
-                                      } else {
-                                        Get.back();
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                      foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: isWideScreen ? 20 : 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      elevation: 3,
-                                      shadowColor: Colors.red.withOpacity(0.5),
-                                    ),
+                            ),
+                          ),
+                          controller.currentStatus.value == TripStatus.cancelled
+                              ? InkWell(
+                                  onTap: () {
+                                    Get.offAllNamed("/customer-home");
+                                  },
+                                  child: Container(
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        const Icon(
-                                          Icons.cancel_outlined,
-                                          size: 24,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Text(
-                                          'إلغاء الرحلة',
-                                          style: AppTextStyles.buttonLarge
-                                              .copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: fontSize,
-                                          ),
-                                        ),
+                                        Icon(Icons.home),
+                                        SizedBox(width: 10),
+                                        Text("الرجوع الى الصفحة الرئيسية"),
                                       ],
                                     ),
                                   ),
+                                )
+                              : Container(),
+                          // بطاقة معلومات الرحلة
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: EdgeInsets.all(cardPadding),
+                            margin: const EdgeInsets.symmetric(vertical: 15),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withValues(alpha: 0.15),
+                                  blurRadius: 15,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
                                 ),
-                            ],
-                          );
-                        },
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                _buildTripInfoRow(
+                                  Icons.person,
+                                  'نوع السائق',
+                                  trip.driverType == DriverType.male
+                                      ? 'سائق'
+                                      : 'سائقة',
+                                  systemColors.primary,
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 15),
+                                  child: Divider(height: 1),
+                                ),
+                                _buildTripInfoRow(
+                                  Icons.route,
+                                  'المسافة',
+                                  '${trip.distance.toStringAsFixed(2)} كم',
+                                  Colors.blue[700]!,
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 15),
+                                  child: Divider(height: 1),
+                                ),
+                                _buildTripInfoRow(
+                                  Icons.attach_money,
+                                  'التكلفة',
+                                  '${trip.price.toStringAsFixed(2)} دينار',
+                                  Colors.green[600]!,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 25),
+                          Obx(
+                            () => controller.driver.value != null
+                                ? // معلومات السائق
+                                _buildDriverDetailsCard(
+                                    controller.driver.value!)
+                                : const SizedBox(),
+                          ),
+                          // معلومات السائق
+                          // _buildDriverDetailsCard(driver),
+                          // معلومات السائق
+                          // _buildDriverDetailsCard(Driver(
+                          //     carNumber: "123",
+                          //     name: "kamal",
+                          //     gender: "male",
+                          //     idNumber: "123",
+                          //     phone: "123")),
+                          const SizedBox(height: 25),
+
+                          // بطاقة طريقة الدفع
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            margin: const EdgeInsets.symmetric(vertical: 15),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: systemColors.primary
+                                      .withValues(alpha: 0.1),
+                                  blurRadius: 15,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: systemColors.primary
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        Icons.payment_rounded,
+                                        color: systemColors.primary,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 15),
+                                    Text(
+                                      'طريقة الدفع',
+                                      style: AppTextStyles.bodyLarge.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                trip.paymentMethod == PaymentMethod.cash
+                                    ? Container(
+                                        padding: const EdgeInsets.all(15),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[50],
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                          border: Border.all(
+                                            color: Colors.grey[200]!,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.money,
+                                              color: Colors.green[600],
+                                              size: 28,
+                                            ),
+                                            const SizedBox(width: 15),
+                                            Text(
+                                              'الدفع نقداً',
+                                              style: AppTextStyles.bodyLarge
+                                                  .copyWith(
+                                                color: Colors.black87,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.green[50],
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                'مفعل',
+                                                style: AppTextStyles.bodySmall
+                                                    .copyWith(
+                                                  color: Colors.green[600],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : Container(
+                                        padding: const EdgeInsets.all(15),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[50],
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                          border: Border.all(
+                                            color: Colors.grey[200]!,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.wallet,
+                                              color: Colors.blue[600],
+                                              size: 28,
+                                            ),
+                                            const SizedBox(width: 15),
+                                            Text(
+                                              'من المحفظة',
+                                              style: AppTextStyles.bodyLarge
+                                                  .copyWith(
+                                                color: Colors.black87,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue[50],
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                'مفعل',
+                                                style: AppTextStyles.bodySmall
+                                                    .copyWith(
+                                                  color: Colors.blue[600],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 25),
+
+                          // زر إلغاء الرحلة
+                          if (controller.currentStatus.value ==
+                                  TripStatus.searching ||
+                              controller.currentStatus.value ==
+                                  TripStatus.driverFound)
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.symmetric(vertical: 15),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (controller.currentStatus.value ==
+                                          TripStatus.searching ||
+                                      controller.currentStatus.value ==
+                                          TripStatus.accepted) {
+                                    Get.defaultDialog(
+                                      title: 'تنبيه',
+                                      titleStyle:
+                                          AppTextStyles.bodyLarge.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: systemColors.primary,
+                                      ),
+                                      middleText: "هل تريد الغاء الرحلة",
+                                      middleTextStyle: AppTextStyles.bodyMedium,
+                                      confirm: ElevatedButton(
+                                        onPressed: () {
+                                          Get.back();
+                                          controller.cancelTrip();
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: systemColors.primary,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'حسناً',
+                                          style:
+                                              AppTextStyles.bodyMedium.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      cancel: ElevatedButton(
+                                        onPressed: () => Get.back(),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: systemColors.error,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        child: Text('لا'),
+                                      ),
+                                    );
+                                  } else {
+                                    Get.back();
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: isWideScreen ? 20 : 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  elevation: 3,
+                                  shadowColor:
+                                      Colors.red.withValues(alpha: 0.5),
+                                ),
+                                child: Text(
+                                  'إلغاء الرحلة',
+                                  style: AppTextStyles.buttonLarge.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: fontSize,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       );
-                    }),
-                  ),
-                ),
-              ],
+                    },
+                  );
+                }),
+              ),
             ),
-          ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -570,7 +556,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 22),
@@ -610,7 +596,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: systemColors.primary.withOpacity(0.1),
+            color: systemColors.primary.withValues(alpha: 0.1),
             blurRadius: 15,
             spreadRadius: 2,
             offset: const Offset(0, 4),
@@ -627,8 +613,8 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  systemColors.primary.withOpacity(0.9),
-                  systemColors.primary.withOpacity(0.7),
+                  systemColors.primary.withValues(alpha: 0.9),
+                  systemColors.primary.withValues(alpha: 0.7),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -636,7 +622,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: systemColors.primary.withOpacity(0.3),
+                  color: systemColors.primary.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -661,7 +647,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                       shadows: [
                         Shadow(
                           blurRadius: 2,
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.3),
                           offset: const Offset(1, 1),
                         ),
                       ],

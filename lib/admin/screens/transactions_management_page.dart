@@ -101,7 +101,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                systemColors.primary.withOpacity(0.8),
+                systemColors.primary.withValues(alpha: 0.8),
                 systemColors.primary,
               ],
               begin: Alignment.topLeft,
@@ -110,7 +110,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: systemColors.primary.withOpacity(0.4),
+                color: systemColors.primary.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: Offset(0, 10),
               ),
@@ -156,7 +156,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 10,
                   offset: Offset(0, 5),
@@ -168,7 +168,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
                 hintText: 'البحث بالوصف',
                 prefixIcon: Icon(
                   Icons.search,
-                  color: systemColors.primary.withOpacity(0.7),
+                  color: systemColors.primary.withValues(alpha: 0.7),
                 ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(
@@ -176,7 +176,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
                   vertical: 15,
                 ),
                 hintStyle: TextStyle(
-                  color: Colors.grey.withOpacity(0.7),
+                  color: Colors.grey.withValues(alpha: 0.7),
                 ),
               ),
               onChanged: (value) {
@@ -196,7 +196,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 10,
                   offset: Offset(0, 5),
@@ -229,7 +229,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
                 },
                 icon: Icon(
                   Icons.filter_list,
-                  color: systemColors.primary.withOpacity(0.7),
+                  color: systemColors.primary.withValues(alpha: 0.7),
                 ),
               ),
             ),
@@ -273,7 +273,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
                 itemCount: filteredTransactions.length,
                 separatorBuilder: (context, index) => Divider(
                   height: 1,
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   indent: 70,
                   endIndent: 16,
                 ),
@@ -293,7 +293,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
                           borderRadius: BorderRadius.circular(15),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
+                              color: Colors.grey.withValues(alpha: 0.1),
                               spreadRadius: 1,
                               blurRadius: 12,
                               offset: Offset(0, 5),
@@ -417,7 +417,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
+                color: Colors.grey.withValues(alpha: 0.2),
                 blurRadius: 20,
                 offset: Offset(0, -5),
               ),
@@ -446,8 +446,8 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: transaction.isCredit
-                          ? Colors.green.withOpacity(0.2)
-                          : Colors.red.withOpacity(0.2),
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : Colors.red.withValues(alpha: 0.2),
                     ),
                     child: Icon(
                       transaction.isCredit
@@ -518,14 +518,14 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
           Icon(
             Icons.receipt_long_outlined,
             size: 100,
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.grey.withValues(alpha: 0.5),
           ),
           SizedBox(height: 20),
           Text(
             'لا توجد معاملات',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.grey.withOpacity(0.7),
+              color: Colors.grey.withValues(alpha: 0.7),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -534,7 +534,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
             'لم يتم العثور على معاملات مطابقة للبحث',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.withOpacity(0.5),
+              color: Colors.grey.withValues(alpha: 0.5),
             ),
             textAlign: TextAlign.center,
           ),

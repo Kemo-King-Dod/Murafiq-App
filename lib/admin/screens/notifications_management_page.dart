@@ -72,7 +72,7 @@ class NotificationsManagementPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -93,7 +93,7 @@ class NotificationsManagementPage extends StatelessWidget {
                   height: 50,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: typeColor.withOpacity(0.2),
+                    color: typeColor.withValues(alpha: 0.2),
                   ),
                   child: Center(
                     child: Icon(
@@ -282,8 +282,8 @@ class NotificationsManagementPage extends StatelessWidget {
                               _controller.selectedType.value = type;
                             }
                           },
-                          selectedColor:
-                              _getNotificationTypeColor(type).withOpacity(0.2),
+                          selectedColor: _getNotificationTypeColor(type)
+                              .withValues(alpha: 0.2),
                         );
                       }).toList(),
                     )),
@@ -355,7 +355,7 @@ class NotificationsManagementPage extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
+                color: Colors.grey.withValues(alpha: 0.2),
                 blurRadius: 20,
                 offset: Offset(0, -5),
               ),

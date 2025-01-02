@@ -76,7 +76,8 @@ class TripWaitingController extends GetxController {
       print(response.toString());
       if (response != null && response['status'] == 'success') {
         currentStatus.value = TripStatus.cancelled;
-        Get.back();
+        shared!.setBool("has_active_trip", false);
+        Get.offAllNamed("/customer-home");
       } else {
         Get.snackbar(
           "",

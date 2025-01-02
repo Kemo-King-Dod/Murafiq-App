@@ -52,9 +52,9 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(0.05),
-                  Colors.white.withOpacity(0.3),
-                  Colors.white.withOpacity(0.05),
+                  Colors.white.withValues(alpha: 0.05),
+                  Colors.white.withValues(alpha: 0.3),
+                  Colors.white.withValues(alpha: 0.05),
                 ],
               ),
             ),
@@ -64,14 +64,14 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  systemColors.primary.withOpacity(0.8),
+                  systemColors.primary.withValues(alpha: 0.8),
                   systemColors.primary,
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: systemColors.primary.withOpacity(0.3),
+                  color: systemColors.primary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: Offset(0, 2),
                 ),
@@ -105,14 +105,14 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.9),
-            Colors.white.withOpacity(0.95),
+            Colors.white.withValues(alpha: 0.9),
+            Colors.white.withValues(alpha: 0.95),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: baseColor.withOpacity(0.15),
+            color: baseColor.withValues(alpha: 0.15),
             blurRadius: 12,
             offset: Offset(0, 4),
           ),
@@ -124,8 +124,8 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {},
-            splashColor: baseColor.withOpacity(0.1),
-            highlightColor: baseColor.withOpacity(0.05),
+            splashColor: baseColor.withValues(alpha: 0.1),
+            highlightColor: baseColor.withValues(alpha: 0.05),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -142,7 +142,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: baseColor.withOpacity(0.3),
+                          color: baseColor.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: Offset(0, 4),
                         ),
@@ -172,7 +172,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
                           padding:
                               EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: baseColor.withOpacity(0.1),
+                            color: baseColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -219,7 +219,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: baseColor.withOpacity(0.3),
+                              color: baseColor.withValues(alpha: 0.3),
                               blurRadius: 4,
                               offset: Offset(0, 2),
                             ),
@@ -257,7 +257,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
             ? Container(
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextField(
@@ -333,7 +333,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
                   Container(
                     padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: systemColors.primary.withOpacity(0.1),
+                      color: systemColors.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

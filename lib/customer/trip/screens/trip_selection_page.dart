@@ -221,10 +221,10 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(
-                        color: systemColors.primary.withOpacity(0.2),
+                        color: systemColors.primary.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -235,7 +235,8 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                           hint: Text(
                             'اختر المدينة',
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: systemColors.primary.withOpacity(0.7),
+                              color:
+                                  systemColors.primary.withValues(alpha: 0.7),
                             ),
                           ),
                           value: _selectedExternalCity,
@@ -255,7 +256,7 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                                         Icon(
                                           Icons.location_on_rounded,
                                           color: systemColors.primary
-                                              .withOpacity(0.7),
+                                              .withValues(alpha: 0.7),
                                           size: 20,
                                         ),
                                         const SizedBox(width: 10),
@@ -360,14 +361,14 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                   gradient: LinearGradient(
                     colors: [
                       systemColors.primary,
-                      systemColors.primary.withOpacity(0.9),
+                      systemColors.primary.withValues(alpha: 0.9),
                     ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: systemColors.primary.withOpacity(0.3),
+                      color: systemColors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -378,8 +379,8 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                   child: InkWell(
                     onTap: _handleLocalTripSelection,
                     borderRadius: BorderRadius.circular(15),
-                    splashColor: Colors.white.withOpacity(0.2),
-                    highlightColor: systemColors.primary.withOpacity(0.8),
+                    splashColor: Colors.white.withValues(alpha: 0.2),
+                    highlightColor: systemColors.primary.withValues(alpha: 0.8),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       child: Row(
@@ -410,19 +411,19 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                   gradient: LinearGradient(
                     colors: [
                       systemColors.primaryGoust,
-                      systemColors.primaryGoust.withOpacity(0.7),
+                      systemColors.primaryGoust.withValues(alpha: 0.7),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: systemColors.primary.withOpacity(0.15),
+                      color: systemColors.primary.withValues(alpha: 0.15),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                     BoxShadow(
-                      color: systemColors.primary.withOpacity(0.05),
+                      color: systemColors.primary.withValues(alpha: 0.05),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -433,8 +434,9 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                   child: InkWell(
                     onTap: _showExternalTripCitySelector,
                     borderRadius: BorderRadius.circular(15),
-                    splashColor: systemColors.primary.withOpacity(0.1),
-                    highlightColor: systemColors.primaryGoust.withOpacity(0.2),
+                    splashColor: systemColors.primary.withValues(alpha: 0.1),
+                    highlightColor:
+                        systemColors.primaryGoust.withValues(alpha: 0.2),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       child: Row(

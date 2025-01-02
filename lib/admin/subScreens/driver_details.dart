@@ -73,7 +73,7 @@ class DriverDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -86,7 +86,7 @@ class DriverDetails extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 40,
-              backgroundColor: systemColors.primary.withOpacity(0.1),
+              backgroundColor: systemColors.primary.withValues(alpha: 0.1),
               child: Icon(
                 Icons.person,
                 size: 50,
@@ -172,7 +172,7 @@ class DriverDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: Offset(0, 5),
@@ -237,7 +237,7 @@ class DriverDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: Offset(0, 5),

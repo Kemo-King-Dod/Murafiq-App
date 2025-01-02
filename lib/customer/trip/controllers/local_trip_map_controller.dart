@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -21,6 +20,7 @@ class LocalTripMapController extends GetxController {
     required this.cityTo,
     this.lasttrip,
   });
+
   final cityAndBoundaryController = Get.find<CityAndBoundaryController>();
   final Trip? lasttrip;
   // Initial position and city details
@@ -31,7 +31,7 @@ class LocalTripMapController extends GetxController {
 
   // Reactive map-related variables
   final Rx<LatLng> _currentPosition = Rx<LatLng>(const LatLng(0, 0));
-  final Rx<LatLng?> _selectedDestination = Rx<LatLng?>(null);
+  late final Rx<LatLng?> _selectedDestination;
   final RxDouble _tripDistance = 0.0.obs;
   final RxDouble _companyFee = 0.0.obs;
   final RxDouble _tripPrice = 0.0.obs;
@@ -54,6 +54,13 @@ class LocalTripMapController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    _selectedDestination = Rx<LatLng?>(lasttrip?.destinationLocation ?? null);
+
+    // Load custom car icon
+    customCarIcon = await BitmapDescriptor.asset(
+      ImageConfiguration(size: Size(50, 50)),
+      'assets/images/UI/car.jpeg',
+    );
 
     if (lasttrip != null) {
       waittingTrip = lasttrip;
@@ -90,12 +97,12 @@ class LocalTripMapController extends GetxController {
     if (lasttrip != null) {
       Future.delayed(const Duration(milliseconds: 500), () {
         mapController?.animateCamera(
-          CameraUpdate.newLatLngBounds(
-            calculateLatLngBounds(
+          CameraUpdate.newLatLngZoom(
+            calculateCenterPoint(
               lasttrip!.startLocation!,
               lasttrip!.destinationLocation!,
             ),
-            100,
+            15, // Adjusted zoom level to make the map closer
           ),
         );
       });
@@ -136,6 +143,10 @@ class LocalTripMapController extends GetxController {
       ).listen((Position position) async {
         print("is streaming: ${position.latitude}, ${position.longitude}");
 
+        // Remove old current location marker
+        markers.removeWhere(
+            (marker) => marker.markerId.value == 'current_location');
+
         _currentPosition.value = LatLng(position.latitude, position.longitude);
         _setupInterCityTrip();
 
@@ -155,8 +166,9 @@ class LocalTripMapController extends GetxController {
                   markerId: MarkerId(position["_id"].toString()),
                   position: LatLng(position["position"]["latitude"],
                       position["position"]["longitude"]),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                      BitmapDescriptor.hueCyan),
+                  icon: customCarIcon ??
+                      BitmapDescriptor.defaultMarkerWithHue(
+                          BitmapDescriptor.hueCyan),
                   infoWindow: const InfoWindow(title: 'موقع السائق'),
                 ),
               );
@@ -169,7 +181,10 @@ class LocalTripMapController extends GetxController {
         }
 
         mapController?.animateCamera(
-          CameraUpdate.newLatLng(_currentPosition.value),
+          CameraUpdate.newLatLngZoom(
+            _currentPosition.value,
+            15, // Adjusted zoom level to make the map closer
+          ),
         );
       });
     } catch (e) {
@@ -228,18 +243,6 @@ class LocalTripMapController extends GetxController {
       _calculateTripDistance(targetPoint);
       _calculateTripPrice();
     }
-  }
-
-  // Get target point based on city name
-  LatLng _getTargetPointForCity(String cityName) {
-    if (cityName == City.alQatrun.arabicName) return City.alQatrun.location;
-    if (cityName == City.alBakhi.arabicName) return City.alBakhi.location;
-    if (cityName == City.qasrMasud.arabicName) return City.qasrMasud.location;
-    if (cityName == City.alJinsiya.arabicName) return City.alJinsiya.location;
-    if (cityName == City.sabha.arabicName) return City.sabha.location;
-
-    // Default fallback
-    return City.alQatrun.location;
   }
 
   // Handle map tap for destination selection
@@ -454,14 +457,14 @@ class LocalTripMapController extends GetxController {
       Polygon(
         polygonId: PolygonId(city.Arabicname),
         points: city.boundary,
-        fillColor: systemColors.primary.withOpacity(0.001),
+        fillColor: systemColors.primary.withValues(alpha: 0.001),
         strokeColor: systemColors.primary,
         strokeWidth: 1,
       ),
       Polygon(
         polygonId: PolygonId(cityTo.Arabicname),
         points: cityTo.boundary,
-        fillColor: systemColors.sucsses.withOpacity(0.001),
+        fillColor: systemColors.sucsses.withValues(alpha: 0.001),
         strokeColor: systemColors.sucsses,
         strokeWidth: 1,
       ),

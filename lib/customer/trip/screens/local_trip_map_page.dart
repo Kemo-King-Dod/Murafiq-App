@@ -51,6 +51,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
             width: Get.width,
             height: Get.height,
             child: Obx(() => GoogleMap(
+                  compassEnabled: false,
                   initialCameraPosition: CameraPosition(
                     target: controller.cityTo == controller.city
                         ? controller.currentPosition
@@ -98,7 +99,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                   )
                 ],
@@ -125,7 +126,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                   )
                 ],
@@ -172,7 +173,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 15,
                               spreadRadius: 5,
                             )
@@ -323,7 +324,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: (color ?? Colors.grey).withOpacity(0.1),
+                  color: (color ?? Colors.grey).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -385,20 +386,20 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                systemColors.primaryGoust.withOpacity(0.1),
-                systemColors.primaryGoust.withOpacity(0.05),
+                systemColors.primaryGoust.withValues(alpha: 0.1),
+                systemColors.primaryGoust.withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: systemColors.primary.withOpacity(0.2),
+              color: systemColors.primary.withValues(alpha: 0.2),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 blurRadius: 15,
                 spreadRadius: 2,
                 offset: const Offset(0, 4),
@@ -413,7 +414,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: systemColors.primary.withOpacity(0.1),
+                      color: systemColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -459,13 +460,13 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                             vertical: 12, horizontal: 8),
                         decoration: BoxDecoration(
                           color: controller.selectedPaymentMethod == method
-                              ? systemColors.primary.withOpacity(0.2)
+                              ? systemColors.primary.withValues(alpha: 0.2)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(15),
                           border: Border.all(
                             color: controller.selectedPaymentMethod == method
                                 ? systemColors.primary
-                                : Colors.grey.withOpacity(0.3),
+                                : Colors.grey.withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                         ),

@@ -248,7 +248,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: systemColors.primary.withOpacity(0.05),
+                              color:
+                                  systemColors.primary.withValues(alpha: 0.05),
                               spreadRadius: 0.09,
                               blurRadius: 8,
                               offset: const Offset(0, 0),
@@ -324,7 +325,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: systemColors.primary.withOpacity(0.3),
+                      color: systemColors.primary.withValues(alpha: 0.3),
                       spreadRadius: 2,
                       blurRadius: 10,
                       offset: const Offset(0, 4),
@@ -333,6 +334,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                 ),
                 child: ElevatedButton(
                   onPressed: () {
+                    if (shared!.getBool("has_active_trip") == true) {
+                      Get.snackbar(
+                        "لديك رحلة نشطة",
+                        "لا يمكنك طلب رحلة جديدة حتى تنتهي الرحلة الحالية",
+                        backgroundColor: systemColors.error,
+                        colorText: systemColors.white,
+                      );
+                      checkTrip();
+                      return;
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(

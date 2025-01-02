@@ -250,7 +250,7 @@ class _DriverHomePageState extends State<DriverHomePage>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -338,7 +338,8 @@ class _DriverHomePageState extends State<DriverHomePage>
                     height: 150,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color:
+                          Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     ),
                     child: Icon(
                       Icons.local_taxi_rounded,
@@ -380,9 +381,9 @@ class _DriverHomePageState extends State<DriverHomePage>
                       borderRadius: BorderRadius.circular(3),
                       gradient: LinearGradient(
                         colors: [
-                          Theme.of(context).primaryColor.withOpacity(0.2),
+                          Theme.of(context).primaryColor.withValues(alpha: 0.2),
                           Theme.of(context).primaryColor,
-                          Theme.of(context).primaryColor.withOpacity(0.2),
+                          Theme.of(context).primaryColor.withValues(alpha: 0.2),
                         ],
                         stops: [
                           0.0,
@@ -411,7 +412,7 @@ class _DriverHomePageState extends State<DriverHomePage>
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                   spreadRadius: 1,
                   blurRadius: 10,
                   offset: const Offset(0, 1),
@@ -429,7 +430,7 @@ class _DriverHomePageState extends State<DriverHomePage>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: systemColors.primary.withOpacity(0.1),
+                          color: systemColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -479,7 +480,7 @@ class _DriverHomePageState extends State<DriverHomePage>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
@@ -528,7 +529,7 @@ class _DriverHomePageState extends State<DriverHomePage>
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 2),
                       decoration: BoxDecoration(
-                        color: systemColors.primary.withOpacity(0.1),
+                        color: systemColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
@@ -696,7 +697,7 @@ class _DriverHomePageState extends State<DriverHomePage>
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: (iconColor ?? Colors.grey[600])!.withOpacity(0.1),
+          color: (iconColor ?? Colors.grey[600])!.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
@@ -742,8 +743,9 @@ class _DriverHomePageState extends State<DriverHomePage>
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).primaryColor.withOpacity(0.1),
+                            color: Theme.of(context)
+                                .primaryColor
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: IconButton(
@@ -771,7 +773,7 @@ class _DriverHomePageState extends State<DriverHomePage>
                                 decoration: BoxDecoration(
                                   color: getStatusColor(
                                           TripService.driverStatus.value)
-                                      .withOpacity(0.1),
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -800,7 +802,7 @@ class _DriverHomePageState extends State<DriverHomePage>
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 1),
@@ -824,7 +826,8 @@ class _DriverHomePageState extends State<DriverHomePage>
                           }
                         },
                         activeColor: systemColors.primary,
-                        activeTrackColor: systemColors.primary.withOpacity(0.5),
+                        activeTrackColor:
+                            systemColors.primary.withValues(alpha: 0.5),
                       )),
                 ),
               ),

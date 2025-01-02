@@ -73,7 +73,7 @@ class AppDarwer {
                               Text(
                                 shared!.getString("user_phone").toString(),
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 14,
                                 ),
                               ),
@@ -179,7 +179,7 @@ class AppDarwer {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: (iconColor ?? Colors.grey[600])!.withOpacity(0.1),
+          color: (iconColor ?? Colors.grey[600])!.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(

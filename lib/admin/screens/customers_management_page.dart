@@ -142,7 +142,7 @@ class _CustomersManagementPageState extends State<CustomersManagementPage> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide(
-                  color: systemColors.primary.withOpacity(0.3),
+                  color: systemColors.primary.withValues(alpha: 0.3),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -207,7 +207,7 @@ class _CustomersManagementPageState extends State<CustomersManagementPage> {
             Icon(
               Bootstrap.people,
               size: 100,
-              color: systemColors.primary.withOpacity(0.5),
+              color: systemColors.primary.withValues(alpha: 0.5),
             ),
             SizedBox(height: 16),
             Text(
@@ -250,7 +250,7 @@ class _CustomersManagementPageState extends State<CustomersManagementPage> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: _getStatusColor(customer.status).withOpacity(0.3),
+              color: _getStatusColor(customer.status).withValues(alpha: 0.3),
               blurRadius: 10,
               spreadRadius: 2,
               offset: Offset(0, 5),
@@ -373,7 +373,7 @@ class _CustomersManagementPageState extends State<CustomersManagementPage> {
         ),
         boxShadow: [
           BoxShadow(
-            color: _getStatusColor(customer.status).withOpacity(0.5),
+            color: _getStatusColor(customer.status).withValues(alpha: 0.5),
             blurRadius: 10,
             spreadRadius: 2,
           ),
