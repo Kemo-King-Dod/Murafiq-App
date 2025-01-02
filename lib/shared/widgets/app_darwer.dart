@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:murafiq/auth/auth_controller.dart';
+import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/driver/private/screens/driver_notifications_page.dart';
 import 'package:murafiq/driver/private/screens/driver_profile_page.dart';
@@ -135,7 +136,7 @@ class AppDarwer {
                     title: 'المساعدة والدعم',
                     onTap: () {
                       Get.back();
-                      _launchURL('wa.me');
+                      _launchURL('whatsapp');
                     },
                   ),
                   _buildDrawerItem(
@@ -143,7 +144,7 @@ class AppDarwer {
                     iconColor: const Color(0xFF1877F2),
                     title: 'صفحتنا على فيسبوك',
                     onTap: () {
-                      _launchURL('https://facebook.com/murafiq');
+                      _launchURL('facebook');
                       Get.back();
                     },
                   ),
@@ -198,18 +199,26 @@ class AppDarwer {
     );
   }
 
-  static Future<void> _launchURL(String urlString) async {
-    if (urlString.contains('wa.me')) {
-      final phoneNumber = "218927775066";
+  static Future<void> _launchURL(String type) async {
+    if (type == 'whatsapp') {
+      final respons = await sendRequestWithHandler(
+        endpoint: '/public/get-whatsapp-url',
+        method: 'GET',
+        loadingMessage: "جاري التحميل",
+      );
 
+      final urls = respons['data']['whatsappUrl'].toString();
+      final urls2 = respons['data']['whatsappUrl2'].toString();
+
+      const phoneNumber = '0927775066';
       try {
         // تجربة فتح الواتساب مباشرة
-        var url = Uri.parse('https://wa.me/$phoneNumber');
+        var url = Uri.parse(urls);
 
         if (await canLaunchUrl(url)) {
           await launchUrl(
             url,
-            mode: LaunchMode.platformDefault,
+            mode: LaunchMode.externalApplication,
             webViewConfiguration: const WebViewConfiguration(
               enableJavaScript: true,
               enableDomStorage: true,
@@ -217,7 +226,7 @@ class AppDarwer {
           );
         } else {
           // محاولة ثانية باستخدام رابط API
-          url = Uri.parse('https://api.whatsapp.com/send?phone=$phoneNumber');
+          url = Uri.parse(urls2);
           if (await canLaunchUrl(url)) {
             await launchUrl(
               url,
@@ -248,12 +257,18 @@ class AppDarwer {
         );
       }
     } else {
+      final respons = await sendRequestWithHandler(
+        endpoint: '/public/get-facebook-url',
+        method: 'GET',
+        loadingMessage: "جاري التحميل",
+      );
+
       try {
-        final Uri url = Uri.parse(urlString);
+        final Uri url = Uri.parse(respons['data']['facebookUrl'].toString());
         if (await canLaunchUrl(url)) {
           await launchUrl(
             url,
-            mode: LaunchMode.platformDefault,
+            mode: LaunchMode.externalApplication,
             webViewConfiguration: const WebViewConfiguration(
               enableJavaScript: true,
               enableDomStorage: true,

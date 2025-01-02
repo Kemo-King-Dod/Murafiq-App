@@ -342,18 +342,34 @@ class DriverDetails extends StatelessWidget {
             },
           ),
         if (driver.status == DriverStatus.active)
-          _buildActionButton(
-            text: 'حظر السائق',
-            color: Colors.red,
-            icon: Icons.block,
-            onPressed: () {
-              controller.showConfirmationDialog(
-                title: 'حظر السائق',
-                message: 'هل أنت متأكد من حظر هذا السائق؟',
-                onConfirm: () =>
-                    controller.updateDriverStatus(DriverStatus.blocked),
-              );
-            },
+          Column(
+            children: [
+              _buildActionButton(
+                text: 'حظر السائق',
+                color: Colors.red,
+                icon: Icons.block,
+                onPressed: () {
+                  controller.showConfirmationDialog(
+                    title: 'حظر السائق',
+                    message: 'هل أنت متأكد من حظر هذا السائق؟',
+                    onConfirm: () =>
+                        controller.updateDriverStatus(DriverStatus.blocked),
+                  );
+                },
+              ),
+              _buildActionButton(
+                text: 'تصفير الرصيد',
+                color: systemColors.primary,
+                icon: Icons.money_off,
+                onPressed: () {
+                  controller.showConfirmationDialog(
+                    title: 'تصفير رصيد السائق',
+                    message: 'هل أنت متأكد من تصفير رصيد هذا السائق؟',
+                    onConfirm: () => controller.zeroDriverWallet(),
+                  );
+                },
+              ),
+            ],
           ),
         if (driver.status == DriverStatus.blocked)
           _buildActionButton(

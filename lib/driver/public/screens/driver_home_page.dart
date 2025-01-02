@@ -31,7 +31,8 @@ class DriverHomePage extends StatefulWidget {
   State<DriverHomePage> createState() => _DriverHomePageState();
 }
 
-class _DriverHomePageState extends State<DriverHomePage> {
+class _DriverHomePageState extends State<DriverHomePage>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final RxBool isAvailable = false.obs;
   final RxList<Trip> availableTrips = <Trip>[].obs;
@@ -39,16 +40,38 @@ class _DriverHomePageState extends State<DriverHomePage> {
   String? city;
   StreamSubscription<Position>? _locationSubscription;
   LatLng? currentPosition;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _opacityAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   @override
   void dispose() {
     _tripCheckTimer?.cancel();
     _locationSubscription?.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -177,7 +200,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
   Future<void> _checkForTrips(LatLng? currentPosition) async {
     if (!isAvailable.value) return;
 
-    final trips = await TripService.getAvailableTrips(city: city,point: currentPosition);
+    final trips =
+        await TripService.getAvailableTrips(city: city, point: currentPosition);
     availableTrips.value = trips;
     print(availableTrips.length);
   }
@@ -258,23 +282,117 @@ class _DriverHomePageState extends State<DriverHomePage> {
   // دالة لبناء بطاقة الطلب
   Widget _buildRequestCard() {
     return Obx(() {
-      if (availableTrips.isEmpty) {
-        return Center(
+      if (!isAvailable.value) {
+        return Container(
+          width: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.search_rounded,
-                size: 64,
+                Icons.power_settings_new_rounded,
+                size: 80,
                 color: Colors.grey[400],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Text(
-                'جاري البحث عن رحلات...',
+                'وضع الاستقبال مغلق',
                 style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
+                  color: Colors.grey[800],
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 250,
+                child: Text(
+                  'قم بتفعيل وضع الاستقبال للبدء في استقبال الطلبات',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (TripService.driverStatus.value != "active") {
+        return Container();
+      }
+
+      if (availableTrips.isEmpty) {
+        return Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: FadeTransition(
+                  opacity: _opacityAnimation,
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    ),
+                    child: Icon(
+                      Icons.local_taxi_rounded,
+                      size: 80,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              Text(
+                'في انتظار الطلبات...',
+                style: TextStyle(
+                  color: Colors.grey[800],
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 250,
+                child: Text(
+                  'سيتم إشعارك فور وصول طلب جديد في منطقتك',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return Container(
+                    width: 200,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).primaryColor.withOpacity(0.2),
+                          Theme.of(context).primaryColor,
+                          Theme.of(context).primaryColor.withOpacity(0.2),
+                        ],
+                        stops: [
+                          0.0,
+                          _animationController.value,
+                          1.0,
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -612,22 +730,64 @@ class _DriverHomePageState extends State<DriverHomePage> {
           child: Column(
             children: [
               // زر فتح القائمة
-              Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.menu_rounded,
-                      color: Theme.of(context).primaryColor,
-                      size: 28,
-                    ),
-                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                    tooltip: 'القائمة الرئيسية',
+              Obx(
+                () => Container(
+                  width: Get.width,
+                  child: Row(
+                    spacing: 5,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.menu_rounded,
+                              color: Theme.of(context).primaryColor,
+                              size: 28,
+                            ),
+                            onPressed: () =>
+                                _scaffoldKey.currentState?.openDrawer(),
+                            tooltip: 'القائمة الرئيسية',
+                          ),
+                        ),
+                      ),
+                      TripService.driverStatus.value == "" ||
+                              TripService.driverStatus.value == "active"
+                          ? Container()
+                          : Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                height: 30,
+                                alignment: Alignment.center,
+                                width: Get.width / 1.5,
+                                margin: EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: getStatusColor(
+                                          TripService.driverStatus.value)
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  TripService.driverStatus.value == "blocked"
+                                      ? "محظور"
+                                      : "معلق",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: getStatusColor(
+                                          TripService.driverStatus.value!)),
+                                ),
+                              ),
+                            ),
+                      Spacer()
+                    ],
                   ),
                 ),
               ),
@@ -692,6 +852,16 @@ class _DriverHomePageState extends State<DriverHomePage> {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    }
+  }
+
+  getStatusColor(String status) {
+    switch (status) {
+      case "pending":
+        return Colors.orange;
+
+      case "blocked":
+        return Colors.red;
     }
   }
 }

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
+import 'package:murafiq/core/functions/get_drivers_position.dart';
 import 'package:murafiq/core/functions/is_point_inside_polygon.dart';
 import 'package:murafiq/core/services/api_service.dart';
 import 'package:murafiq/customer/trip/screens/trip_waiting_page.dart';
@@ -16,11 +19,12 @@ class LocalTripMapController extends GetxController {
     required this.initialPosition,
     required this.city,
     required this.cityTo,
+    this.lasttrip,
   });
   final cityAndBoundaryController = Get.find<CityAndBoundaryController>();
-
+  final Trip? lasttrip;
   // Initial position and city details
-  final Position initialPosition;
+  final LatLng initialPosition;
   final CityAndBoundary city;
   final CityAndBoundary cityTo;
   Set<Polygon> Boundries = {};
@@ -40,37 +44,143 @@ class LocalTripMapController extends GetxController {
   final RxSet<Marker> markers = <Marker>{}.obs;
   final RxSet<Polyline> polylines = <Polyline>{}.obs;
 
+  // Location streaming
+  StreamSubscription<Position>? _locationSubscription;
+
+  Trip? waittingTrip;
+  RxBool isThereTrip = false.obs;
+  BitmapDescriptor? customCarIcon;
+
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
-    // Initialize current position
-    _currentPosition.value = LatLng(
-      initialPosition.latitude,
-      initialPosition.longitude,
-    );
-    Boundries = {
-      Polygon(
-          polygonId: PolygonId(city.Arabicname),
-          points: city.boundary,
-          fillColor: systemColors.primary.withValues(alpha: 0.1),
-          strokeColor: systemColors.primary,
-          strokeWidth: 1),
-      Polygon(
-          polygonId: PolygonId(cityTo.Arabicname),
-          points: cityTo.boundary,
-          fillColor: systemColors.sucsses.withValues(alpha: 0.1),
-          strokeColor: systemColors.sucsses,
-          strokeWidth: 1),
-    };
+
+    if (lasttrip != null) {
+      waittingTrip = lasttrip;
+      isThereTrip.value = true;
+      // Set initial position from the trip's start location
+      _currentPosition.value = lasttrip!.startLocation!;
+      _selectedDestination.value = lasttrip!.destinationLocation;
+    } else {
+      // Initialize current position from provided initial position
+      _currentPosition.value = LatLng(
+        initialPosition.latitude,
+        initialPosition.longitude,
+      );
+    }
+
+    // Start location streaming
+    _startLocationStream();
 
     // Add initial current location marker
     _addCurrentLocationMarker();
 
     // Handle inter-city trip setup
-    _setupInterCityTrip();
+    if (cityTo != city) {
+      _setupInterCityTrip();
+    }
+
+    // Setup boundaries
+    _setupBoundaries();
 
     // Calculate trip price
     _calculateTripPrice();
+
+    // If there's an active trip, fit the map to show both points
+    if (lasttrip != null) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        mapController?.animateCamera(
+          CameraUpdate.newLatLngBounds(
+            calculateLatLngBounds(
+              lasttrip!.startLocation!,
+              lasttrip!.destinationLocation!,
+            ),
+            100,
+          ),
+        );
+      });
+    }
+  }
+
+  void _startLocationStream() async {
+    try {
+      // Check if location service is enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        print('Location services are disabled');
+        await Geolocator.openLocationSettings();
+        return;
+      }
+
+      // Check location permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          print('Location permissions are denied');
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        print('Location permissions are permanently denied');
+        return;
+      }
+
+      // Start location stream
+      _locationSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 10,
+        ),
+      ).listen((Position position) async {
+        print("is streaming: ${position.latitude}, ${position.longitude}");
+
+        _currentPosition.value = LatLng(position.latitude, position.longitude);
+        _setupInterCityTrip();
+
+        _addCurrentLocationMarker();
+
+        final response = await GetDriversPosition.getDriversPOS(
+            pos: LatLng(position.latitude, position.longitude));
+        if (response != null) {
+          if (response["data"]["driversPositions"] is List) {
+            markers.removeWhere((marker) =>
+                marker.markerId.value != 'current_location' &&
+                marker.markerId.value != 'destination');
+            response["data"]["driversPositions"].forEach((position) {
+              print(position);
+              markers.add(
+                Marker(
+                  markerId: MarkerId(position["_id"].toString()),
+                  position: LatLng(position["position"]["latitude"],
+                      position["position"]["longitude"]),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueCyan),
+                  infoWindow: const InfoWindow(title: 'موقع السائق'),
+                ),
+              );
+            });
+          }
+        }
+
+        if (_selectedDestination.value != null) {
+          _calculateTripDistance(_selectedDestination.value!);
+        }
+
+        mapController?.animateCamera(
+          CameraUpdate.newLatLng(_currentPosition.value),
+        );
+      });
+    } catch (e) {
+      print('Error in location stream: $e');
+    }
+  }
+
+  @override
+  void onClose() {
+    _locationSubscription?.cancel();
+    super.onClose();
   }
 
   // Add current location marker to the map
@@ -102,15 +212,17 @@ class LocalTripMapController extends GetxController {
       );
 
       // Add polyline between current location and destination
-      polylines.add(
-        Polyline(
-          polylineId: const PolylineId('trip_route'),
-          points: [_currentPosition.value, targetPoint],
-          color: systemColors.primary,
-          width: 5,
-          patterns: [PatternItem.dash(20), PatternItem.gap(10)],
-        ),
-      );
+      Future.delayed(
+          const Duration(seconds: 1),
+          () => polylines.add(
+                Polyline(
+                  polylineId: const PolylineId('trip_route'),
+                  points: [_currentPosition.value, targetPoint],
+                  color: systemColors.primary,
+                  width: 5,
+                  patterns: [PatternItem.dash(20), PatternItem.gap(10)],
+                ),
+              ));
 
       _selectedDestination.value = targetPoint;
       _calculateTripDistance(targetPoint);
@@ -140,11 +252,10 @@ class LocalTripMapController extends GetxController {
       Marker(
         markerId: const MarkerId('destination'),
         position: tappedPoint,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         infoWindow: const InfoWindow(title: 'وجهتك'),
       ),
     );
-
     _selectedDestination.value = tappedPoint;
 
     // Calculate trip distance
@@ -266,7 +377,9 @@ class LocalTripMapController extends GetxController {
         print(response.toString());
         if (response['status'].toString() == 'success') {
           final Trip tripFromResponse = Trip.fromJson(response["data"]["trip"]);
-          Get.to(() => TripWaitingPage(trip: tripFromResponse));
+          waittingTrip = tripFromResponse;
+          isThereTrip.value = true;
+          // Get.to(() => TripWaitingPage(trip: tripFromResponse));
         } else if (response["status"] == "fail" &&
             response["message"] != null &&
             response["data"] == null) {
@@ -285,9 +398,10 @@ class LocalTripMapController extends GetxController {
           );
 
           final Trip tripFromResponse = Trip.fromJson(response["data"]["trip"]);
-
+          waittingTrip = tripFromResponse;
+          isThereTrip.value = true;
           // Navigate to trip waiting page
-          Get.to(() => TripWaitingPage(trip: tripFromResponse));
+          // Get.to(() => TripWaitingPage(trip: tripFromResponse));
         }
       }
     } catch (e) {
@@ -334,4 +448,23 @@ class LocalTripMapController extends GetxController {
   bool get isSatelliteView => _isSatelliteView.value;
   DriverType get selectedDriverType => _selectedDriverType.value;
   PaymentMethod get selectedPaymentMethod => _selectedPaymentMethod.value;
+
+  void _setupBoundaries() {
+    Boundries = {
+      Polygon(
+        polygonId: PolygonId(city.Arabicname),
+        points: city.boundary,
+        fillColor: systemColors.primary.withOpacity(0.001),
+        strokeColor: systemColors.primary,
+        strokeWidth: 1,
+      ),
+      Polygon(
+        polygonId: PolygonId(cityTo.Arabicname),
+        points: cityTo.boundary,
+        fillColor: systemColors.sucsses.withOpacity(0.001),
+        strokeColor: systemColors.sucsses,
+        strokeWidth: 1,
+      ),
+    };
+  }
 }

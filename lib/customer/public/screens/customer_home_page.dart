@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:murafiq/admin/controllers/offers_management_controller.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
@@ -11,10 +12,12 @@ import 'package:murafiq/customer/private/screens/customer_profile.dart';
 import 'package:murafiq/customer/private/screens/trip_history_page.dart';
 import 'package:murafiq/customer/public/screens/no_internet.dart';
 import 'package:murafiq/customer/trip/controllers/trip_waiting_controller.dart';
+import 'package:murafiq/customer/trip/screens/local_trip_map_page.dart';
 import 'package:murafiq/customer/trip/screens/trip_waiting_page.dart';
 import 'package:murafiq/driver/public/controllers/driver_profile_controller.dart';
 import 'package:murafiq/main.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:murafiq/models/city.dart';
 import 'package:murafiq/models/trip.dart';
 import 'package:murafiq/shared/widgets/app_darwer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -72,7 +75,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             endpoint: '/trips/status',
             method: 'GET',
             loadingMessage: "جاري فحص حالة الرحلة");
-        print("customer home page 41" + response.toString());
+        print("customer home page 41" + response["data"]['city'].toString());
         if (response != null && response['data'] != null) {
           final updatedTrip = Trip.fromJson(response['data']['trip']);
 
@@ -85,9 +88,15 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               shared!.setBool("has_active_trip", false);
               Get.offAll(CustomerHomePage());
             } else {
-              Get.offAll(TripWaitingPage(
-                trip: updatedTrip,
-              ));
+              var city = CityAndBoundary.fromJson(response["data"]["city"]);
+              var cityTo = CityAndBoundary.fromJson(response["data"]["cityTo"]);
+
+              Get.offAll(() => LocalTripMapPage(
+                    initialPosition: city.center,
+                    city: city,
+                    cityTo: cityTo,
+                    lasttrip: updatedTrip,
+                  ));
             }
           } else {
             print(1);
@@ -219,7 +228,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             Obx(
               () => CarouselSlider(
                 options: CarouselOptions(
-                  height: 200.0,
+                  height: 300.0,
                   autoPlay: true,
                   enlargeCenterPage: true,
                   aspectRatio: 16 / 9,
@@ -233,7 +242,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     builder: (BuildContext context) {
                       return Container(
                         width: MediaQuery.of(context).size.width,
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        padding: const EdgeInsets.symmetric(vertical: 24.0),
                         margin: const EdgeInsets.symmetric(horizontal: 5.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),

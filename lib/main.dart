@@ -63,11 +63,7 @@ void main() async {
 
   // Request notification permissions
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+  NotificationSettings settings = await messaging.requestPermission();
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     print('User granted notification permissions');

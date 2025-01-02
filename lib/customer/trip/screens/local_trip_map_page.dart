@@ -5,31 +5,43 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/core/utils/text_styles.dart';
 import 'package:murafiq/customer/trip/controllers/local_trip_map_controller.dart';
+import 'package:murafiq/customer/trip/screens/trip_waiting_page.dart';
 import 'package:murafiq/models/city.dart';
 import 'package:murafiq/models/trip.dart';
 
 class LocalTripMapPage extends GetView<LocalTripMapController> {
-  final Position initialPosition;
+  final LatLng initialPosition;
   final CityAndBoundary city;
   final CityAndBoundary cityTo;
+  final Trip? lasttrip;
 
   const LocalTripMapPage({
     Key? key,
     required this.initialPosition,
     required this.city,
     required this.cityTo,
+    this.lasttrip,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // Check if controller exists, if not create it
-    if (!Get.isRegistered<LocalTripMapController>()) {
+    if (!Get.isRegistered<LocalTripMapController>() && lasttrip == null) {
       Get.put(LocalTripMapController(
         initialPosition: initialPosition,
         city: city,
         cityTo: cityTo,
       ));
     }
+    if (!Get.isRegistered<LocalTripMapController>() && lasttrip != null) {
+      Get.put(LocalTripMapController(
+        initialPosition: initialPosition,
+        city: city,
+        cityTo: cityTo,
+        lasttrip: lasttrip,
+      ));
+    }
+    Trip? trip;
 
     return Scaffold(
       body: Stack(
@@ -39,7 +51,6 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
             width: Get.width,
             height: Get.height,
             child: Obx(() => GoogleMap(
-              
                   initialCameraPosition: CameraPosition(
                     target: controller.cityTo == controller.city
                         ? controller.currentPosition
@@ -53,17 +64,17 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                       : MapType.normal,
                   markers: controller.markers.toSet(),
                   polylines: controller.polylines,
-                  onTap: controller.cityTo == controller.city
+                  onTap: controller.cityTo == controller.city &&
+                          !controller.isThereTrip.value
                       ? controller.onMapTap
                       : null,
                   myLocationButtonEnabled: false,
-                  polygons:controller.Boundries,
+                  polygons: controller.Boundries,
                   onMapCreated: (mapController) {
                     controller.mapController = mapController;
 
                     // If inter-city trip, fit markers in view
                     if (controller.cityTo != controller.city) {
-                      
                       mapController.animateCamera(
                         CameraUpdate.newLatLngBounds(
                           controller.calculateLatLngBounds(
@@ -125,152 +136,175 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                   color: systemColors.primary,
                 ),
                 onPressed: () {
-                  // TODO: Implement current location functionality
+                  controller.mapController?.animateCamera(
+                    CameraUpdate.newLatLng(controller.currentPosition),
+                  );
                 },
               ),
             ),
           ),
 
           // Trip Details Sheet
-          DraggableScrollableSheet(
-            initialChildSize: 0.4,
-            minChildSize: 0.2,
-            maxChildSize: 0.9,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(25),
-                    topRight: Radius.circular(25),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 15,
-                      spreadRadius: 5,
-                    )
-                  ],
-                ),
-                child: ListView(
-                  controller: scrollController,
-                  children: [
-                    // Drag Indicator
-                    Center(
-                      child: Container(
-                        width: 50,
-                        height: 6,
-                        margin: const EdgeInsets.symmetric(vertical: 10),
+          Obx(
+            () => controller.isThereTrip.value
+                ? DraggableScrollableSheet(
+                    initialChildSize: 0.4,
+                    minChildSize: 0.2,
+                    maxChildSize: 0.9,
+                    builder: (context, scrollController) {
+                      return TripWaitingPage(
+                        trip: controller.waittingTrip!,
+                        scrollcontroller: scrollController,
+                      );
+                    },
+                  )
+                : DraggableScrollableSheet(
+                    initialChildSize: 0.4,
+                    minChildSize: 0.2,
+                    maxChildSize: 0.9,
+                    builder: (context, scrollController) {
+                      return Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(3),
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(25),
+                            topRight: Radius.circular(25),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 15,
+                              spreadRadius: 5,
+                            )
+                          ],
                         ),
-                      ),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      child: Obx(() => Column(
-                            children: [
-                              // Trip Details Title
-                              Text(
-                                'تفاصيل الرحلة',
-                                style: AppTextStyles.h3.copyWith(
-                                  color: systemColors.primary,
-                                  fontWeight: FontWeight.bold,
+                        child: ListView(
+                          controller: scrollController,
+                          children: [
+                            // Drag Indicator
+                            Center(
+                              child: Container(
+                                width: 50,
+                                height: 6,
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(3),
                                 ),
                               ),
-                              const SizedBox(height: 15),
+                            ),
 
-                              // Trip Distance
-                              _buildTripDetailRow(
-                                'المسافة:',
-                                '${controller.tripDistance.toStringAsFixed(2)} كم',
-                                Icons.route_rounded,
-                              ),
-
-                              // Short Distance Warning
-                              if (controller.selectedDestination != null &&
-                                  controller.tripDistance < 0.5)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10),
-                                  child: Text(
-                                    'المسافة قصيرة جدًا. يجب أن تكون المسافة أكثر من 500 متر',
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: systemColors.error,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-
-                              // Estimated Cost
-                              _buildTripDetailRow(
-                                'التكلفة التقديرية:',
-                                '${controller.tripPrice.toStringAsFixed(2)} دينار',
-                                Icons.attach_money_rounded,
-                                color: systemColors.primary,
-                              ),
-
-                              // Driver Type Selection
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 15),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'نوع السائق:',
-                                      style: AppTextStyles.bodyMedium,
-                                    ),
-                                    Row(
-                                      children: [
-                                        _buildDriverTypeButton(
-                                          DriverType.male,
-                                          'سائق',
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              child: Obx(() => Column(
+                                    children: [
+                                      // Trip Details Title
+                                      Text(
+                                        'تفاصيل الرحلة',
+                                        style: AppTextStyles.h3.copyWith(
+                                          color: systemColors.primary,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        const SizedBox(width: 10),
-                                        _buildDriverTypeButton(
-                                          DriverType.female,
-                                          'سائقة',
+                                      ),
+                                      const SizedBox(height: 15),
+
+                                      // Trip Distance
+                                      _buildTripDetailRow(
+                                        'المسافة:',
+                                        '${controller.tripDistance.toStringAsFixed(2)} كم',
+                                        Icons.route_rounded,
+                                      ),
+
+                                      // Short Distance Warning
+                                      if (controller.selectedDestination !=
+                                              null &&
+                                          controller.tripDistance < 0.5)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 10),
+                                          child: Text(
+                                            'المسافة قصيرة جدًا. يجب أن تكون المسافة أكثر من 500 متر',
+                                            style: AppTextStyles.bodySmall
+                                                .copyWith(
+                                              color: systemColors.error,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
 
-                              // Payment Method Selection
-                              _buildPaymentMethodSection(),
+                                      // Estimated Cost
+                                      _buildTripDetailRow(
+                                        'التكلفة التقديرية:',
+                                        '${controller.tripPrice.toStringAsFixed(2)} دينار',
+                                        Icons.attach_money_rounded,
+                                        color: systemColors.primary,
+                                      ),
 
-                              // Confirm Trip Button
-                              ElevatedButton(
-                                onPressed: controller.confirmTrip,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: systemColors.primary,
-                                  minimumSize: const Size(double.infinity, 50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                ),
-                                child: Text(
-                                  'تأكيد الرحلة',
-                                  style: AppTextStyles.buttonLarge.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                                      // Driver Type Selection
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 15),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              'نوع السائق:',
+                                              style: AppTextStyles.bodyMedium,
+                                            ),
+                                            Row(
+                                              children: [
+                                                _buildDriverTypeButton(
+                                                  DriverType.male,
+                                                  'سائق',
+                                                ),
+                                                const SizedBox(width: 10),
+                                                _buildDriverTypeButton(
+                                                  DriverType.female,
+                                                  'سائقة',
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Payment Method Selection
+                                      _buildPaymentMethodSection(),
+
+                                      // Confirm Trip Button
+                                      ElevatedButton(
+                                        onPressed: controller.confirmTrip,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: systemColors.primary,
+                                          minimumSize:
+                                              const Size(double.infinity, 50),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'تأكيد الرحلة',
+                                          style: AppTextStyles.buttonLarge
+                                              .copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          )
         ],
       ),
     );

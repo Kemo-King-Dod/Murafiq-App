@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -65,7 +66,7 @@ class AuthController extends GetxController {
       shared!.setString("user_phone", response['data']['user']['phone']);
       shared!.setString("user_id", response['data']['user']['id'].toString());
       shared!.setString("user_name", response['data']['user']['name']);
-      
+
       // Store token
       if (response['token'] != null) {
         final token = response['token'];
@@ -85,12 +86,15 @@ class AuthController extends GetxController {
   void _navigateBasedOnUserType() {
     switch (userType.value) {
       case 'customer':
+        FirebaseMessaging.instance.subscribeToTopic('customers');
         Get.offAllNamed('/customer-home');
         break;
       case 'driver':
+        FirebaseMessaging.instance.subscribeToTopic('drivers');
         Get.offAllNamed('/driver-home');
         break;
       case 'admin':
+        FirebaseMessaging.instance.subscribeToTopic('admins');
         Get.offAllNamed('/admin-dashboard');
         break;
       default:
@@ -102,7 +106,7 @@ class AuthController extends GetxController {
     try {
       final token = shared!.getString('token');
       final savedUserType = shared!.getString('user_type');
-      
+
       if (token != null && savedUserType != null) {
         // Verify token with server
         final response = await sendRequestWithHandler(
@@ -300,7 +304,6 @@ class AuthController extends GetxController {
       shared!.remove("user_id");
       shared!.remove("user_name");
       shared!.remove("fcm_token");
-      
 
       Get.offAll(() => LoginPage());
     } catch (e) {

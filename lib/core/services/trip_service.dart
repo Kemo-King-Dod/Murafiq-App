@@ -4,11 +4,15 @@ import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/services/api_service.dart';
 import 'package:murafiq/core/services/local_storage_service.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
+import 'package:murafiq/models/driver.dart';
 import 'package:murafiq/models/trip.dart';
 import 'package:murafiq/driver/public/screens/active_trip_page.dart';
 
+import 'package:get/get.dart';
+
 class TripService {
   // جلب الرحلات المتاحة للسائق
+  static RxString driverStatus="active".obs;
   static Future<List<Trip>> getAvailableTrips(
       {String? city, LatLng? point}) async {
     try {
@@ -20,10 +24,11 @@ class TripService {
           'point': {"latitude": point!.latitude, "longitude": point.longitude},
         },
       );
-
+      print(response.toString());
       if (response != null &&
           response['status'] == 'success' &&
           response['data'] != null) {
+        driverStatus.value = response['data']["driverStatus"].toString();
         final List<dynamic> tripsJson = response['data']['trips'] ?? [];
         final rejectedTrips = LocalStorageService.getRejectedTrips();
 
@@ -51,6 +56,7 @@ class TripService {
     }
   }
 
+  get DriverStatus => driverStatus.value;
   // قبول الرحلة
   static Future<bool> acceptTrip(String tripId) async {
     try {

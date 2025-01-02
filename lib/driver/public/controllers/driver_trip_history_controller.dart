@@ -79,6 +79,8 @@ class DriverTripHistoryController extends GetxController {
   }
 
   Future<void> fetchTripHistory() async {
+    int i = 0;
+
     try {
       isLoading.value = true;
       final response = await sendRequestWithHandler(
@@ -89,11 +91,13 @@ class DriverTripHistoryController extends GetxController {
 
       if (response != null && response['data'] != null) {
         final tripList = response['data']['trips'] as List;
-        trips.value =
-            tripList.map((tripData) => Trip.fromJson(tripData)).toList();
+        trips.value = tripList.map((tripData) {
+          i++;
+          return Trip.fromJson(tripData);
+        }).toList();
       }
     } catch (e) {
-      print('Error fetching trip history: $e');
+      print('Error fetching trip history: $e-$i');
       Get.snackbar(
         'خطأ',
         'حدث خطأ أثناء جلب سجل الرحلات',

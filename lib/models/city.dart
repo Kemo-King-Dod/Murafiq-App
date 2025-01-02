@@ -14,6 +14,7 @@ class CityAndBoundary {
     required this.Arabicname,
     required this.boundary,
   });
+
   factory CityAndBoundary.fromJson(Map<String, dynamic> json) {
     return CityAndBoundary(
       center: LatLng(json['center']['latitude'], json['center']['longitude']),
@@ -29,7 +30,8 @@ class CityAndBoundary {
 class CityAndBoundaryController extends GetxController {
   List<Map<String, dynamic>> priceToDifferentCities = [];
   RxList<CityAndBoundary> citiesAndBoundaries = <CityAndBoundary>[].obs;
-
+  List<String> features=[];
+  List? tripSelectionImgs;
   // get citiesAndBoundarie => citiesAndBoundaries;
 
   Future<void> fetchCitiesandBoundaries() async {
@@ -40,7 +42,6 @@ class CityAndBoundaryController extends GetxController {
       );
       if (response != null && response['status'] == 'success') {
         final data = response['data'];
-        print(data['']);
         if (data["citiesAndBoundaries"] is List) {
           citiesAndBoundaries.clear();
           for (var cityAndBoundary in data["citiesAndBoundaries"]) {
@@ -56,7 +57,8 @@ class CityAndBoundaryController extends GetxController {
             priceToDifferentCities.add(element);
           });
         }
-        print(priceToDifferentCities);
+        features = data["features"];
+        tripSelectionImgs = data["tripSelectionImgs"];
       }
     } catch (e) {
       print('Error fetching city boundaries: $e');
@@ -70,7 +72,6 @@ class CityAndBoundaryController extends GetxController {
     priceToDifferentCities.forEach((cityprice) {
       if (cityprice["cities"].contains(city) &&
           cityprice["cities"].contains(cityTo)) {
-      
         price = cityprice["price"].toDouble();
       }
     });

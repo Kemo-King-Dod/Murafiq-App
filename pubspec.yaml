@@ -91,12 +91,13 @@ flutter:
     - assets/images/UI/toWharePage.png
     - assets/images/UI/there's no req.png
     - assets/images/icons/
-    - assets/SVG/addBalance.svg
+    - assets/SVG/
     - assets/images/onboarding/
     - assets/brand/brand.jpg
     - assets/brand/logoL.png
     - assets/brand/logoD.png
     - assets/brand/startScreen.png
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

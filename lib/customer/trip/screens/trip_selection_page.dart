@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -13,6 +14,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 import '../../../core/functions/GelocatorFun.dart';
 import 'local_trip_map_page.dart';
+import 'dart:math';
 
 class TripSelectionPage extends StatefulWidget {
   const TripSelectionPage({Key? key}) : super(key: key);
@@ -22,23 +24,43 @@ class TripSelectionPage extends StatefulWidget {
 }
 
 class _TripSelectionPageState extends State<TripSelectionPage> {
-  final List<String> _features = [
+  List<String> _features = [
     "رحلات آمنة ومريحة مع أفضل المرشدين السياحيين",
     "اكتشف أجمل المعالم السياحية في مدينتك",
     "تجربة سفر فريدة مع مرافق متخصص",
-    "رحلات مخصصة حسب اهتماماتك",
+    "خدمة عملاء على مدار الساعة",
+    "أسعار تنافسية ومناسبة للجميع",
+    "تتبع رحلتك مباشرة عبر التطبيق",
+    "استمتع برحلة مميزة مع مرافق"
+  ];
+
+  final List<String> _images = [
+    'assets/SVG/undraw_delivery-truck_mjui.svg',
+    'assets/SVG/undraw_destination_fkst (1).svg',
+    'assets/SVG/undraw_emails_085h.svg',
+    'assets/SVG/undraw_into-the-night_nd84.svg',
+    'assets/SVG/undraw_mobile-encryption_flk2.svg',
+    'assets/SVG/undraw_navigator_2ntl.svg',
+    'assets/SVG/undraw_vintage_q09n.svg',
   ];
 
   int _currentFeatureIndex = 0;
   Timer? _timer;
-  CityAndBoundaryController cityAndBoundaryController =
-      Get.find<CityAndBoundaryController>();
+  final CityAndBoundaryController cityAndBoundaryController = Get.find();
+  double _opacity = 1.0;
   CityAndBoundary? _selectedExternalCity;
 
   @override
   void initState() {
-    _startFeatureAnimation();
     super.initState();
+    // تحميل النصوص أولاً
+    if (cityAndBoundaryController.features.isNotEmpty) {
+      _features = cityAndBoundaryController.features;
+    }
+    // بدء التحريك فقط إذا كانت القوائم غير فارغة
+    if (_features.isNotEmpty) {
+      _startFeatureAnimation();
+    }
   }
 
   @override
@@ -49,14 +71,29 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
 
   void _startFeatureAnimation() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_features.isEmpty) {
+        timer.cancel();
+        return;
+      }
       setState(() {
-        _currentFeatureIndex = (_currentFeatureIndex + 1) % _features.length;
+        _opacity = 0.0;
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted && _features.isNotEmpty) {
+            setState(() {
+              _currentFeatureIndex =
+                  (_currentFeatureIndex + 1) % _features.length;
+              _opacity = 1.0;
+            });
+          }
+        });
       });
     });
   }
 
   Future<void> _handleLocalTripSelection({CityAndBoundary? cityTo}) async {
     try {
+      await cityAndBoundaryController.fetchCitiesandBoundaries();
+
       systemUtils.loadingPop("جاري تحديد موقعك", canPop: true);
       // استخدام الدالة الجديدة لتحديد الموقع
 
@@ -103,9 +140,12 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
         if (currentCity != null) {
           Get.to(
             () => LocalTripMapPage(
-              initialPosition: position,
+              initialPosition: LatLng(position.latitude, position.longitude),
               city: currentCity!,
-              cityTo: cityTo != null ? cityTo : currentCity!,
+              cityTo:
+                  cityTo != null && cityTo.Arabicname != currentCity!.Arabicname
+                      ? cityTo
+                      : currentCity!,
             ),
           );
         }
@@ -265,10 +305,14 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Image at the top
-              Image.asset(
-                'assets/images/UI/toWharePage.png',
-                height: 250,
-                fit: BoxFit.contain,
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 500),
+                opacity: _opacity,
+                child: SvgPicture.asset(
+                  _images[_currentFeatureIndex % _images.length],
+                  height: 250,
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(height: 30),
 
@@ -292,14 +336,17 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                       ),
                     );
                   },
-                  child: Text(
-                    _features[_currentFeatureIndex],
-                    key: ValueKey<int>(_currentFeatureIndex),
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: systemColors.primary,
-                      height: 1.5,
+                  child: Opacity(
+                    opacity: _opacity,
+                    child: Text(
+                      _features[_currentFeatureIndex % _features.length],
+                      key: ValueKey<int>(_currentFeatureIndex),
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: systemColors.primary,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),

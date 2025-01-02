@@ -19,7 +19,7 @@ class NotificationService {
   NotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = 
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   // Initialize notification services
@@ -43,11 +43,16 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // Initialize local notifications
-    const AndroidInitializationSettings initializationSettingsAndroid = 
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    
-    final InitializationSettings initializationSettings = InitializationSettings(
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/launcher_icon');
+
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings();
+
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
       android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
     );
 
     await _flutterLocalNotificationsPlugin.initialize(
@@ -102,7 +107,7 @@ class NotificationService {
       if (token != null) {
         await saveFCMToken(token);
       }
-     
+
       return token;
     } catch (e) {
       print("Error getting FCM token: $e");
@@ -125,7 +130,7 @@ class NotificationService {
   // Show local notification
   Future<void> _showLocalNotification(RemoteMessage message) async {
     // Android notification details
-    const AndroidNotificationDetails androidPlatformChannelSpecifics = 
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'high_importance_channel', // id
       'High Importance Notifications', // title
@@ -134,7 +139,7 @@ class NotificationService {
     );
 
     // Notification details
-    const NotificationDetails platformChannelSpecifics = 
+    const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     // Show the notification

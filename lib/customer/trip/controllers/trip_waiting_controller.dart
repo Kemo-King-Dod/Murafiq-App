@@ -44,7 +44,6 @@ class TripWaitingController extends GetxController {
         endpoint: '/trips/status',
         method: 'GET',
       );
-      print(response.toString());
       if (response != null && response['data'] != null) {
         final updatedTrip = Trip.fromJson(response['data']['trip']);
         trip.value = updatedTrip;

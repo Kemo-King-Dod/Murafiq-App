@@ -17,7 +17,7 @@ class ApiService {
         validateStatus: (status) {
           // اعتبر الأكواد 200، 201، 400، 404 ناجحة
           return status != null &&
-              [200, 201, 400, 404, 401, 403].contains(status);
+              [200, 201, 207, 400, 404, 401, 403].contains(status);
         },
       ),
     );
@@ -71,6 +71,7 @@ class ApiService {
       // التحقق من حالة الطلب
       if (response.statusCode == 200 ||
           response.statusCode == 201 ||
+          response.statusCode == 207 ||
           response.statusCode == 400 ||
           response.statusCode == 401 ||
           response.statusCode == 403 ||

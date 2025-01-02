@@ -71,4 +71,35 @@ class DriverDetailsController extends GetxController {
       },
     );
   }
+
+  Future<void> zeroDriverWallet() async {
+    try {
+      final response = await sendRequestWithHandler(
+        method: "patch",
+        endpoint: '/admin/zero_driver_wallet',
+        body: {
+          'driverId': driver.id,
+        },
+        loadingMessage: 'جاري تصفير الرصيد...',
+      );
+
+      if (response != null && response['status'] == 'success') {
+        driver.balance = 0;
+        update();
+        Get.snackbar(
+          'نجاح',
+          'تم تصفير رصيد السائق بنجاح',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'خطأ',
+        'حدث خطأ أثناء تصفير الرصيد',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
 }
