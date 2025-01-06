@@ -384,6 +384,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                           },
                         );
 
+                        print(response.toString());
                         if (response != null &&
                             response["data"] != null &&
                             response["status"] == "success" &&

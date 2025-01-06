@@ -96,6 +96,7 @@ flutter:
     - assets/brand/logoD.png
     - assets/brand/startScreen.png
     - assets/images/UI/car.jpeg
+    - assets/images/UI/caryellow.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

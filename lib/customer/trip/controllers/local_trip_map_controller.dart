@@ -41,15 +41,22 @@ class LocalTripMapController extends GetxController {
 
   // Map controllers and markers
   late GoogleMapController mapController;
-  final RxSet<Marker> markers = <Marker>{}.obs;
+  final RxSet<Marker> _markers = <Marker>{}.obs;
   final RxSet<Polyline> polylines = <Polyline>{}.obs;
 
+  // Getter for markers
+  Set<Marker> get markers => _markers.value;
+
   // Location streaming
+  Timer? _locationTimer;
+  Timer? _driversUpdateTimer;
+  Position? _lastPosition;
   StreamSubscription<Position>? _locationSubscription;
 
   Trip? waittingTrip;
   RxBool isThereTrip = false.obs;
   BitmapDescriptor? customCarIcon;
+  BitmapDescriptor? carInThisTrip;
 
   @override
   void onInit() async {
@@ -60,6 +67,10 @@ class LocalTripMapController extends GetxController {
     customCarIcon = await BitmapDescriptor.asset(
       ImageConfiguration(size: Size(50, 50)),
       'assets/images/UI/car.jpeg',
+    );
+    carInThisTrip = await BitmapDescriptor.asset(
+      ImageConfiguration(size: Size(50, 50)),
+      'assets/images/UI/caryellow.png',
     );
 
     if (lasttrip != null) {
@@ -115,7 +126,16 @@ class LocalTripMapController extends GetxController {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         print('Location services are disabled');
-        await Geolocator.openLocationSettings();
+        Get.snackbar(
+          "تنبيه",
+          "خدمة تحديد الموقع غير مفعلة. يرجى تفعيلها للمتابعة",
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+          duration: const Duration(seconds: 5),
+          onTap: (_) async {
+            await Geolocator.openLocationSettings();
+          },
+        );
         return;
       }
 
@@ -125,56 +145,46 @@ class LocalTripMapController extends GetxController {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           print('Location permissions are denied');
+          Get.snackbar(
+            "تنبيه",
+            "لا يمكن متابعة الرحلة بدون صلاحية الموقع",
+            backgroundColor: systemColors.error,
+            colorText: systemColors.white,
+            duration: const Duration(seconds: 5),
+          );
+          Get.back(); // Return to previous screen
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
         print('Location permissions are permanently denied');
+        Get.snackbar(
+          "تنبيه",
+          "تم رفض الوصول إلى الموقع بشكل دائم. يرجى تفعيل الصلاحية من إعدادات التطبيق للمتابعة",
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+          duration: const Duration(seconds: 5),
+          onTap: (_) async {
+            await Geolocator.openAppSettings();
+          },
+        );
+        Get.back(); // Return to previous screen
         return;
       }
 
-      // Start location stream
-      _locationSubscription = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 10,
-        ),
-      ).listen((Position position) async {
-        print("is streaming: ${position.latitude}, ${position.longitude}");
+      // Function to update location and markers
+      void updateLocationAndMarkers(Position position) async {
+        print("Position updated: ${position.latitude}, ${position.longitude}");
 
         // Remove old current location marker
-        markers.removeWhere(
+        _markers.removeWhere(
             (marker) => marker.markerId.value == 'current_location');
 
         _currentPosition.value = LatLng(position.latitude, position.longitude);
         _setupInterCityTrip();
 
         _addCurrentLocationMarker();
-
-        final response = await GetDriversPosition.getDriversPOS(
-            pos: LatLng(position.latitude, position.longitude));
-        if (response != null) {
-          if (response["data"]["driversPositions"] is List) {
-            markers.removeWhere((marker) =>
-                marker.markerId.value != 'current_location' &&
-                marker.markerId.value != 'destination');
-            response["data"]["driversPositions"].forEach((position) {
-              print(position);
-              markers.add(
-                Marker(
-                  markerId: MarkerId(position["_id"].toString()),
-                  position: LatLng(position["position"]["latitude"],
-                      position["position"]["longitude"]),
-                  icon: customCarIcon ??
-                      BitmapDescriptor.defaultMarkerWithHue(
-                          BitmapDescriptor.hueCyan),
-                  infoWindow: const InfoWindow(title: 'موقع السائق'),
-                ),
-              );
-            });
-          }
-        }
 
         if (_selectedDestination.value != null) {
           _calculateTripDistance(_selectedDestination.value!);
@@ -183,24 +193,99 @@ class LocalTripMapController extends GetxController {
         mapController?.animateCamera(
           CameraUpdate.newLatLngZoom(
             _currentPosition.value,
-            15, // Adjusted zoom level to make the map closer
+            15,
           ),
         );
+      }
+
+      // Start location updates based on movement (10 meters)
+      _locationSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 10,
+        ),
+      ).listen((Position position) {
+        updateLocationAndMarkers(position);
+      }, onError: (error) {
+        print('Error in location stream: $error');
+        Get.snackbar(
+          "تنبيه",
+          "حدث خطأ في تحديث الموقع. يرجى التأكد من تفعيل خدمة الموقع",
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+          duration: const Duration(seconds: 5),
+        );
+      });
+
+      // Initial drivers update
+      _updateDriversPositions();
+
+      // Start periodic updates every 20 seconds for drivers positions
+      _driversUpdateTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+        _updateDriversPositions();
       });
     } catch (e) {
-      print('Error in location stream: $e');
+      print('Error in location updates: $e');
+      Get.snackbar(
+        "تنبيه",
+        "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى",
+        backgroundColor: systemColors.error,
+        colorText: systemColors.white,
+        duration: const Duration(seconds: 5),
+      );
+    }
+  }
+
+  void _updateDriversPositions() async {
+    final response =
+        await GetDriversPosition.getDriversPOS(pos: _currentPosition.value);
+
+    if (response != null) {
+      if (response["data"]["driversPositions"] != null) {
+        _markers.removeWhere((marker) =>
+            marker.markerId.value != 'current_location' &&
+            marker.markerId.value != 'destination');
+        response["data"]["driversPositions"].forEach((position) async {
+          print("positionn: $position");
+
+          _markers.add(
+            position["_id"] == waittingTrip?.driver?.id
+                ? Marker(
+                    markerId: MarkerId(position["_id"].toString()),
+                    position: LatLng(position["position"]["latitude"],
+                        position["position"]["longitude"]),
+                    icon: carInThisTrip ??
+                        BitmapDescriptor.defaultMarkerWithHue(
+                            BitmapDescriptor.hueCyan),
+                    infoWindow: const InfoWindow(title: 'موقع السائق'),
+                  )
+                : Marker(
+                    markerId: MarkerId(position["_id"].toString()),
+                    position: LatLng(position["position"]["latitude"],
+                        position["position"]["longitude"]),
+                    icon: customCarIcon ??
+                        BitmapDescriptor.defaultMarkerWithHue(
+                            BitmapDescriptor.hueCyan),
+                    infoWindow: const InfoWindow(title: 'موقع السائق'),
+                  ),
+          );
+          update();
+        });
+      }
     }
   }
 
   @override
   void onClose() {
+    _locationTimer?.cancel();
+    _driversUpdateTimer?.cancel();
     _locationSubscription?.cancel();
     super.onClose();
   }
 
   // Add current location marker to the map
   void _addCurrentLocationMarker() {
-    markers.add(
+    _markers.add(
       Marker(
         markerId: const MarkerId('current_location'),
         position: _currentPosition.value,
@@ -217,7 +302,7 @@ class LocalTripMapController extends GetxController {
       LatLng targetPoint = cityTo.center;
 
       // Add destination marker
-      markers.add(
+      _markers.add(
         Marker(
           markerId: const MarkerId('destination'),
           position: targetPoint,
@@ -247,11 +332,14 @@ class LocalTripMapController extends GetxController {
 
   // Handle map tap for destination selection
   void onMapTap(LatLng tappedPoint) {
-    // Remove existing destination marker
-    markers.removeWhere((marker) => marker.markerId.value == 'destination');
     if (!isPointInsidePolygons(tappedPoint, cityTo.boundary.toSet())) return;
-    // Add new destination marker
-    markers.add(
+
+    // Create a new set with existing markers excluding the destination
+    final newMarkers = _markers.value.toSet()
+      ..removeWhere((marker) => marker.markerId.value == 'destination');
+
+    // Add new destination marker to the set
+    newMarkers.add(
       Marker(
         markerId: const MarkerId('destination'),
         position: tappedPoint,
@@ -259,6 +347,9 @@ class LocalTripMapController extends GetxController {
         infoWindow: const InfoWindow(title: 'وجهتك'),
       ),
     );
+
+    // Update the markers reactively
+    _markers.value = newMarkers;
     _selectedDestination.value = tappedPoint;
 
     // Calculate trip distance

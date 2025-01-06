@@ -594,7 +594,7 @@ class OffersMangementPage extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: ElevatedButton(
-                                      onPressed: () {
+                                      onPressed: () async{
                                         // Validate image first
                                         if (_controller.imageFile == null) {
                                           ScaffoldMessenger.of(context)
@@ -625,7 +625,7 @@ class OffersMangementPage extends StatelessWidget {
                                                 '', // Will be updated later
                                           );
 
-                                          _controller.addOffer(newOffer);
+                                          await _controller.addOffer(newOffer);
                                           Get.back();
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(

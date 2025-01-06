@@ -29,7 +29,6 @@ class AuthController extends GetxController {
         final notificationService = Get.find<NotificationService>();
         fcm_token = await notificationService.getAndSaveFCMToken();
       }
-
       final response = await sendRequestWithHandler(
         endpoint: '/auth/login',
         method: 'POST',

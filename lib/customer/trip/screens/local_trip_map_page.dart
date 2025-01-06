@@ -63,7 +63,7 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                   mapType: controller.isSatelliteView
                       ? MapType.satellite
                       : MapType.normal,
-                  markers: controller.markers.toSet(),
+                  markers: controller.markers,
                   polylines: controller.polylines,
                   onTap: controller.cityTo == controller.city &&
                           !controller.isThereTrip.value

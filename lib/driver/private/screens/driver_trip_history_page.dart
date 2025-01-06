@@ -119,7 +119,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: systemColors.primary,
+                                color: systemColors.white,
                                 letterSpacing: 0.5,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -339,8 +339,8 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                   iconColor: Colors.green.shade600,
                   textColor: Colors.green.shade900,
                 )
-              : _buildInfoItem(Clarity.organization_line,
-                  "المدينة \n ${trip.startCity}",
+              : _buildInfoItem(
+                  Clarity.organization_line, "المدينة \n ${trip.startCity}",
                   iconColor: Colors.blue.shade600,
                   textColor: Colors.blue.shade900),
         ],

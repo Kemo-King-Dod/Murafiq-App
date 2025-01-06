@@ -94,12 +94,56 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
     try {
       await cityAndBoundaryController.fetchCitiesandBoundaries();
 
-      systemUtils.loadingPop("جاري تحديد موقعك", canPop: true);
-      // استخدام الدالة الجديدة لتحديد الموقع
+      // Check location services first
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        Get.back(); // Close loading dialog if open
+        Get.snackbar(
+          "تنبيه",
+          "خدمة تحديد الموقع غير مفعلة",
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+          duration: const Duration(seconds: 5),
+        );
+        await Geolocator.openLocationSettings();
+        return;
+      }
 
+      // Check location permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          Get.back(); // Close loading dialog if open
+          Get.snackbar(
+            "تنبيه",
+            "لم يتم السماح بالوصول إلى الموقع",
+            backgroundColor: systemColors.error,
+            colorText: systemColors.white,
+            duration: const Duration(seconds: 5),
+          );
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        Get.back(); // Close loading dialog if open
+        Get.snackbar(
+          "تنبيه",
+          "تم رفض الوصول إلى الموقع بشكل دائم. يرجى تفعيل الصلاحية من إعدادات التطبيق",
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+          duration: const Duration(seconds: 5),
+        );
+        await Geolocator.openAppSettings();
+        return;
+      }
+
+      systemUtils.loadingPop("جاري تحديد موقعك", canPop: true);
+      
       Position? position = await LocationService.getCurrentLocation();
       if (position != null) {
-        // استخدام الموقع
+        // استخدام الدالة الجديدة لتحديد الموقع
 
         LatLng currentPosition = LatLng(position.latitude, position.longitude);
         CityAndBoundary? currentCity;

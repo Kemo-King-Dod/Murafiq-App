@@ -75,7 +75,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             endpoint: '/trips/status',
             method: 'GET',
             loadingMessage: "جاري فحص حالة الرحلة");
-        print("customer home page 41" + response["data"]['city'].toString());
+        print("customer home page 41" + response.toString());
         if (response != null && response['data'] != null) {
           final updatedTrip = Trip.fromJson(response['data']['trip']);
 
@@ -88,6 +88,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               shared!.setBool("has_active_trip", false);
               Get.offAll(CustomerHomePage());
             } else {
+              shared!.setBool("has_active_trip", false);
+
               var city = CityAndBoundary.fromJson(response["data"]["city"]);
               var cityTo = CityAndBoundary.fromJson(response["data"]["cityTo"]);
 
@@ -103,10 +105,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             checkInternetAndProceed();
           }
         } else {
-          print(2);
+          shared!.setBool("has_active_trip", false);
         }
       } catch (e) {
-        print('Error checking trip status: $e');
+        print('Error checking trip status: ');
       }
     }
   }

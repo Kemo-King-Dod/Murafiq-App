@@ -160,7 +160,7 @@ class OffersManagementController extends GetxController {
     _applySorting();
   }
 
-  void addOffer(Offer offer) async {
+  Future<void> addOffer(Offer offer) async {
     if (imageFile != null) {
       try {
         final dioo = dio.Dio();
@@ -182,7 +182,8 @@ class OffersManagementController extends GetxController {
             },
           ),
         );
-        print(response.toString());
+        print("response offer :" + response.toString());
+
         if (response.statusCode == 200) {
           // Parse the response to get the created offer with its imageUrl
           try {
