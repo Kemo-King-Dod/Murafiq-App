@@ -1,18 +1,36 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/services/api_service.dart';
 import 'package:murafiq/core/services/local_storage_service.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
+import 'package:murafiq/core/version/version.dart';
 import 'package:murafiq/models/driver.dart';
 import 'package:murafiq/models/trip.dart';
 import 'package:murafiq/driver/public/screens/active_trip_page.dart';
 
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TripService {
   // جلب الرحلات المتاحة للسائق
-  static RxString driverStatus="active".obs;
+  static RxString driverStatus = "active".obs;
+  static Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar(
+        'خطأ',
+        'لا يمكن فتح الرابط',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   static Future<List<Trip>> getAvailableTrips(
       {String? city, LatLng? point}) async {
     try {
@@ -28,6 +46,41 @@ class TripService {
       if (response != null &&
           response['status'] == 'success' &&
           response['data'] != null) {
+        if (response != null && response['version'] != Version.version) {
+          Get.isDialogOpen!
+              ? null
+              : Get.dialog(
+                  barrierDismissible: false,
+                  PopScope(
+                      canPop: false,
+                      child: AlertDialog(
+                          backgroundColor: systemColors.white,
+                          content: Container(
+                            color: systemColors.white,
+                            height: 250,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "حدث تحديث جديد الرجاء التحميل".tr,
+                                  style: systemTextStyle.mediumDark,
+                                ),
+                                Icon(
+                                  Icons.download,
+                                  color: systemColors.primary,
+                                  size: 50,
+                                ),
+                                TextButton(
+                                    onPressed: () =>
+                                        _launchURL(response["url"]),
+                                    child: Text(
+                                      "تحميل".tr,
+                                      style: systemTextStyle.mediumPrimary,
+                                    ))
+                              ],
+                            ),
+                          ))));
+        }
         driverStatus.value = response['data']["driverStatus"].toString();
         final List<dynamic> tripsJson = response['data']['trips'] ?? [];
         final rejectedTrips = LocalStorageService.getRejectedTrips();
@@ -168,13 +221,7 @@ class TripService {
 
       if (response != null) {
         if (response['status'] == 'success') {
-          Get.snackbar(
-            'نجاح',
-            'تم التحقق من رمز الرحلة بنجاح',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: systemColors.sucsses,
-            colorText: systemColors.white,
-          );
+     
           return true;
         } else {
           Get.snackbar(

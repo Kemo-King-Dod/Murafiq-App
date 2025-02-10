@@ -12,6 +12,7 @@ class Transaction {
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
+    
     return Transaction(
       description: json['description'] ?? '',
       amount: (json['amount'] ?? 0.0).toDouble(),

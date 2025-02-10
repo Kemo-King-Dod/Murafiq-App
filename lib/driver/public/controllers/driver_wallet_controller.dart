@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
+import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/driver/private/supScreens/allTransactions.dart';
 import 'package:murafiq/models/transaction.dart';
 
@@ -22,8 +24,6 @@ class DriverWalletController extends GetxController {
         method: 'GET',
       );
 
-      print(response.toString());
-
       if (response != null && response['data'] != null) {
         balance.value = (response['data']['balance'] ?? 0.0).toDouble();
 
@@ -34,10 +34,9 @@ class DriverWalletController extends GetxController {
             .toList();
       }
     } catch (e) {
-      print('Error fetching wallet details: $e');
       Get.snackbar(
         'خطأ',
-        'حدث خطأ أثناء جلب تفاصيل المحفظة',
+        'حدث خطأ أثناء جلب تفاصيل المحفظة'.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
@@ -47,33 +46,25 @@ class DriverWalletController extends GetxController {
 
   void withdrawFunds() async {
     try {
-      final response = await sendRequestWithHandler(
-        endpoint: '/driver/withdraw',
-        method: 'POST',
-        body: {
-          'amount': balance.value,
-        },
+      Get.snackbar(
+        duration: Duration(seconds: 5),
+        'نأسف'.tr,
+        "سيتم اضافة سحب الاموال قريبا ان شاء الله يرجى التوجه الى مركز مرافق الخاص بمدينتك او التواصل مع المساعدة",
+        colorText: systemColors.white,
+        backgroundColor: systemColors.primary,
+        backgroundGradient: LinearGradient(colors: [
+          systemColors.primary,
+          systemColors.primary.withValues(alpha: 0.9),
+          systemColors.primary.withValues(alpha: 0.8),
+          systemColors.primary.withValues(alpha: 0.7)
+        ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        snackPosition: SnackPosition.BOTTOM,
       );
-
-      if (response != null && response['success'] == true) {
-        Get.snackbar(
-          'نجاح',
-          'تمت عملية السحب بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        fetchWalletDetails();
-      } else {
-        Get.snackbar(
-          'خطأ',
-          response['message'] ?? 'حدث خطأ أثناء سحب الأموال',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
     } catch (e) {
       print('Error withdrawing funds: $e');
       Get.snackbar(
-        'خطأ',
-        'حدث خطأ أثناء محاولة سحب الأموال',
+        'خطأ'.tr,
+        'حدث خطأ أثناء محاولة سحب الأموال'.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
     }

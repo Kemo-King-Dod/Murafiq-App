@@ -1,13 +1,12 @@
 import 'dart:ui';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:murafiq/driver/public/controllers/driver_profile_controller.dart';
-import 'package:murafiq/driver/public/widgets/profile_bottom_sheets.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 
+// ignore: must_be_immutable
 class DriverProfilePage extends GetView<DriverProfileController> {
   UserType? userType;
   DriverProfilePage({Key? key, this.userType}) : super(key: key);
@@ -23,7 +22,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
         slivers: [
           SliverAppBar(
             leading: Container(
-              margin: EdgeInsets.all(7),
+              margin: const EdgeInsets.all(7),
               height: 50,
               width: 50,
               decoration: BoxDecoration(
@@ -45,8 +44,8 @@ class DriverProfilePage extends GetView<DriverProfileController> {
             centerTitle: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                'الملف الشخصي',
-                style: TextStyle(
+                'الملف الشخصي'.tr,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -61,7 +60,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                             )
                           : Container(
                               color: systemColors.primary,
-                              child: Icon(
+                              child: const Icon(
                                 Icons.person,
                                 size: 100,
                                 color: Colors.white,
@@ -86,13 +85,13 @@ class DriverProfilePage extends GetView<DriverProfileController> {
             ),
           ),
           SliverPadding(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _buildProfileSummaryCard(),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 _buildProfileActionButtons(),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 _buildProfileStatistics(),
               ]),
             ),
@@ -119,7 +118,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
             color: systemColors.primary.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 10,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -152,14 +151,14 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                         ),
                       ),
                     ),
-                    SizedBox(width: 20),
+                    const SizedBox(width: 20),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             controller.driverName.value,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -167,10 +166,12 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
-                          SizedBox(height: 5),
+                          const SizedBox(height: 5),
                           Text(
-                            userType == UserType.driver ? 'سائق' : 'راكب',
-                            style: TextStyle(
+                            userType == UserType.driver
+                                ? 'سائق'.tr
+                                : 'راكب'.tr,
+                            style: const TextStyle(
                               fontSize: 14,
                               color: Colors.white70,
                               fontWeight: FontWeight.w300,
@@ -181,28 +182,28 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildDetailRow(
-                  title: "رقم الهاتف",
+                  title: "رقم الهاتف".tr,
                   icon: HeroIcons.device_phone_mobile,
                   text: controller.phoneNumber.value,
                   iconColor: Colors.white,
                   textColor: Colors.white,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 userType == UserType.driver
                     ? _buildDetailRow(
-                        title: "نوع السيارة",
+                        title: "نوع السيارة".tr,
                         icon: Icons.car_rental,
                         text: controller.vehicleType.value,
                         iconColor: Colors.white,
                         textColor: Colors.white,
                       )
-                    : SizedBox(),
+                    : const SizedBox(),
                 _buildDetailRow(
                   icon: Iconsax.calendar_2_outline,
                   text: controller.createdAt.value,
-                  title: "تاريخ التسجيل",
+                  title: "تاريخ التسجيل".tr,
                   iconColor: Colors.white,
                   textColor: Colors.white,
                 ),
@@ -226,7 +227,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
           color: iconColor ?? systemColors.primary,
           size: 24,
         ),
-        SizedBox(width: 15),
+        const SizedBox(width: 15),
         title == null
             ? Container()
             : Text(
@@ -235,7 +236,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
               ),
         title == null
             ? Container()
-            : SizedBox(
+            : const SizedBox(
                 width: 10,
               ),
         Text(
@@ -257,14 +258,14 @@ class DriverProfilePage extends GetView<DriverProfileController> {
         _buildGlassButton(
           onPressed: controller.editProfile,
           icon: Icons.edit,
-          label: 'تعديل الملف',
+          label: 'تعديل الملف'.tr,
           primaryColor: systemColors.primary,
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         _buildGlassButton(
           onPressed: controller.changePassword,
           icon: Icons.lock,
-          label: 'تغيير كلمة المرور',
+          label: 'تغيير كلمة المرور'.tr,
           primaryColor: Colors.green,
         ),
       ],
@@ -293,7 +294,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
             color: primaryColor.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 10,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -304,7 +305,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
           onTap: onPressed,
           child: Container(
             height: 60,
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -313,10 +314,10 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                   color: Colors.white,
                   size: 18,
                 ),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -349,7 +350,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
             color: systemColors.primary.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -362,7 +363,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'إحصائيات الرحلات',
+                      'إحصائيات الرحلات'.tr,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -376,7 +377,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: userType == UserType.driver
                       ? MainAxisAlignment.spaceEvenly
@@ -385,7 +386,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                     _buildEnhancedStatItem(
                       color: Colors.indigo.shade900,
                       icon: BoxIcons.bx_car,
-                      label: 'عدد الرحلات',
+                      label: 'عدد الرحلات'.tr,
                       value: controller.totalTrips.value.toString(),
                       gradient: LinearGradient(
                         colors: [
@@ -398,9 +399,9 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                         ? _buildEnhancedStatItem(
                             color: systemColors.sucsses.withValues(alpha: 0.5),
                             icon: Icons.monetization_on,
-                            label: 'إجمالي الأرباح',
+                            label: 'إجمالي الأرباح'.tr,
                             value:
-                                '${controller.totalEarnings.value.toStringAsFixed(2)} د.ل',
+                                '${controller.totalEarnings.value.toStringAsFixed(2)} ${'د.ل'.tr}',
                             gradient: LinearGradient(
                               colors: [
                                 systemColors.sucsses.withValues(alpha: 0.7),
@@ -434,7 +435,7 @@ class DriverProfilePage extends GetView<DriverProfileController> {
             color: color.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 10,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -447,26 +448,26 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: 0.2),
               ),
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               child: Icon(
                 icon,
                 color: Colors.white,
                 size: 40,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
                 fontWeight: FontWeight.w300,
               ),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -479,45 +480,45 @@ class DriverProfilePage extends GetView<DriverProfileController> {
     );
   }
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: 40,
-          ),
-          SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildStatItem({
+  //   required IconData icon,
+  //   required String label,
+  //   required String value,
+  //   required Color color,
+  // }) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     margin: const EdgeInsets.all(8),
+  //     decoration: BoxDecoration(
+  //       color: color.withValues(alpha: 0.1),
+  //       borderRadius: BorderRadius.circular(10),
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         Icon(
+  //           icon,
+  //           color: color,
+  //           size: 40,
+  //         ),
+  //         const SizedBox(height: 8),
+  //         Text(
+  //           label,
+  //           style: const TextStyle(
+  //             fontSize: 14,
+  //             color: Colors.grey,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 4),
+  //         Text(
+  //           value,
+  //           style: TextStyle(
+  //             fontSize: 18,
+  //             fontWeight: FontWeight.bold,
+  //             color: color,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

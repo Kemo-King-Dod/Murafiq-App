@@ -1,5 +1,4 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:murafiq/customer/trip/controllers/trip_waiting_controller.dart';
 import 'package:murafiq/models/customer.dart';
 import 'package:murafiq/models/driver.dart';
 

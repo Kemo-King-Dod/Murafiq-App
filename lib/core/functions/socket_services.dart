@@ -1,118 +1,198 @@
-// import "dart:async";
+import "dart:async";
+import "package:get/get.dart";
+import "package:murafiq/core/constant/Constatnt.dart";
+import "package:murafiq/main.dart";
+import "package:socket_io_client/socket_io_client.dart" as IO;
 
-// import "package:get/get.dart";
-// import "package:murafiq/main.dart";
-// import "package:murafiq/core/utils/systemVarible.dart";
-// import "package:murafiq/core/constant/Constatnt.dart";
-// import "package:socket_io_client/socket_io_client.dart" as IO;
+class SocketService {
+  static final SocketService _instance = SocketService._internal();
+  IO.Socket? socket;
+  final RxBool isConnected = false.obs;
+  final RxBool isConnecting = false.obs;
+  bool isReconnecting = false;
+  Timer? reconnectTimer;
 
-// class SocketService {
-//   static final SocketService _instance = SocketService._internal();
-//   IO.Socket? socket;
-//   SocketService._internal();
+  SocketService._internal();
 
-//   factory SocketService() {
-//     return _instance;
-//   }
-//    bool isReconnecting = false;
-//      Timer? reconnectTimer;
-//   connectAndListen() {
-//     final token = shared!.getString("token");
-//     if (socket == null) {
-//       print("______________________________________");
-//       DriverhomepageController driverController = Get.find();
+  factory SocketService() {
+    return _instance;
+  }
 
-     
+  Future<void> connectAndListen() async {
+    final token = shared!.getString("token");
 
+    // إذا كان السوكت موجوداً ومتصلاً، لا داعي لإعادة الاتصال
+    if (socket != null && socket!.connected) {
+      print("Socket already connected");
+      isConnected.value = true;
+      isConnecting.value = false;
+      return;
+    }
 
-//       socket = IO.io(
-//         '${serverConstant.serverUrl}',
-//         IO.OptionBuilder()
-//             .setTransports(["websocket"]) // تأكد من أنك تستخدم WebSocket فقط
-//             .setExtraHeaders({"Authorization": token!}) // إرسال الـ token
-//             .enableReconnection() // تمكين إعادة الاتصال التلقائي
-//             .setReconnectionAttempts(5) // عدد المحاولات لإعادة الاتصال
-//             .setReconnectionDelay(1000) // تأخير بين المحاولات (بالملي ثانية)
-//             .setTimeout(5000)
-//             .setReconnectionDelayMax(10000) // Timeout للإتصال (بالملي ثانية)
-//             .build(),
-//       );
+    // إذا كان السوكت موجوداً ولكن غير متصل، نقوم بتنظيفه
+    if (socket != null) {
+      print("Cleaning up existing socket connection...");
+      socket!.disconnect();
+      socket!.dispose();
+      socket = null;
+      isConnected.value = false;
+      await Future.delayed(Duration(milliseconds: 500));
+    }
 
-//       socket!.onConnect((_) => {
-//             print("السيرفر متصل"),
-//           });
-//       socket!.on("connect", (_) {
-//         print("connected");
-//         driverController.socketState.value = true;
-//            reconnectTimer?.cancel();
-//            isReconnecting = false;
-        
-//       });
+    isConnecting.value = true;
+    print("Attempting to connect to socket server...");
+    final serverAddress = serverConstant.serverUrl.replaceAll('/api', '');
+    print("Socket server address: $serverAddress");
 
-  
+    try {
+      socket = IO.io(
+        serverAddress,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setExtraHeaders({'Authorization': token!})
+            .enableReconnection()
+            .setReconnectionAttempts(5)
+            .setReconnectionDelay(1000)
+            .setReconnectionDelayMax(5000)
+            .setTimeout(10000)
+            .setPath('/socket.io/')
+            .disableAutoConnect()
+            .enableForceNew()
+            .build(),
+      );
 
-//       socket!.on('reconnect', (_) {
-//         print('Reconnected to server');
-//       });
-//       socket!.on('reconnecting', (_) {
-//         print('Reconnecting to server');
-//       });
+      socket!.connect();
+      _setupSocketListeners();
 
-//       socket!.on('connect_error', (error) {
-//         print('Connection Error: $error');
-//           if (driverController.isDriverActive.value) {
-//       startReconnect();
-//     }
-//       });
-  
-//       socket!.on("addJourney",
-//           (journey) => {systemControllers.driverController.isThereJourney()});
+      // انتظار حتى يتم الاتصال أو فشل الاتصال
+      bool connected = await _waitForConnection();
+      if (!connected) {
+        print("Failed to connect to socket server after timeout");
+        dispose();
+      }
+    } catch (e) {
+      print("Error connecting to socket server: $e");
+      dispose();
+    } finally {
+      isConnecting.value = false;
+    }
+  }
 
-//       socket!.on(
-//           'disconnect',
-//           (_) => {
-//                 print("disconnect from Socket"),
-//                 driverController.socketState.value = false,
-//                     if (driverController.isDriverActive.value) {
-//       startReconnect()
-//     }
-//               });
-              
-//     }
-    
-//   }
+  Future<bool> _waitForConnection() async {
+    Completer<bool> connectionCompleter = Completer();
 
-//   // إعادة المحاولة
-//   void startReconnect() {
-//     if (isReconnecting) return;
-//     isReconnecting = true;
+    // تعيين مؤقت للمهلة الزمنية
+    Timer timeoutTimer = Timer(Duration(seconds: 10), () {
+      if (!connectionCompleter.isCompleted) {
+        connectionCompleter.complete(false);
+      }
+    });
 
-//     reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
-//       print('محاولة إعادة الاتصال...');
-//       socket!.connect();
-//     });
-//   }
+    // الاستماع لحدث الاتصال
+    socket!.once('connect', (_) {
+      if (!connectionCompleter.isCompleted) {
+        timeoutTimer.cancel();
+        connectionCompleter.complete(true);
+      }
+    });
 
-//   void compliteJourney(id) {
-//     print("inSocket Service");
+    // الاستماع لأخطاء الاتصال
+    socket!.once('connect_error', (error) {
+      if (!connectionCompleter.isCompleted) {
+        timeoutTimer.cancel();
+        connectionCompleter.complete(false);
+      }
+    });
 
-//     if (socket != null) {
-//       socket!.emit('complite-journey-in-server', (id));
-//     }
-//   }
+    return connectionCompleter.future;
+  }
 
-//   void whatHappenToJourney(journeyId) {
-//     if (socket != null) {
-//       socket!.emit('what-happen-to-journey-in-server', journeyId);
-//     }
-//   }
+  void _setupSocketListeners() {
+    socket!.onConnect((_) {
+      print("Socket connected successfully");
+      isConnected.value = true;
+    });
 
+    socket!.on("connect", (_) {
+      print("Socket connect event received");
+      reconnectTimer?.cancel();
+      isReconnecting = false;
+      isConnected.value = true;
+    });
 
-//   void dispose() {
-//     if (socket != null) {
-//       print("driver is offline");
-//       socket!.disconnect();
-//       socket = null;
-//     }
-//   }
-// }
+    socket!.on('reconnect', (_) {
+      print('Socket reconnected to server');
+      isConnected.value = true;
+    });
+
+    socket!.on('reconnecting', (_) {
+      print('Socket attempting to reconnect...');
+      isConnected.value = false;
+    });
+
+    socket!.on('connect_error', (error) {
+      print('Socket connection error: $error');
+      isConnected.value = false;
+      startReconnect();
+    });
+
+    socket!.on('disconnect', (_) {
+      print('Socket disconnected from server');
+      isConnected.value = false;
+    });
+
+// ========================================================
+// ===================== Driver socket =====================
+// ==========================================================
+    socket!.on("update-driver", (func) {
+      print("Driver Socket connected successfully");
+      isConnected.value = true;
+    });
+
+// ===========================================================
+
+    // إضافة مستمعين إضافيين للتصحيح
+    socket!.onError((error) => print('Socket error: $error'));
+    socket!.onConnectError((error) => print('Socket connect error: $error'));
+    socket!.onConnectTimeout((_) => print('Socket connection timeout'));
+  }
+
+  void startReconnect() {
+    if (isReconnecting) return;
+    isReconnecting = true;
+
+    reconnectTimer = Timer.periodic(Duration(seconds: 5), (_) {
+      print('محاولة إعادة الاتصال...');
+      connectAndListen();
+    });
+  }
+
+  void updateDriver({data}) {
+    if (socket != null && socket!.connected) {
+      printer.f('update-driver: $data');
+      socket!.emit('update-driver', data);
+    } else {
+      print('Cannot emit event: Socket is not connected');
+    }
+  }
+
+  void updateUser(function, {data}) {
+    if (socket != null && socket!.connected) {
+      printer.f('update-user: $function');
+      socket!.emit('update-user', data ?? function);
+    } else {
+      print('Cannot emit event: Socket is not connected');
+    }
+  }
+
+  void dispose() {
+    if (socket != null) {
+      print("Disconnecting socket...");
+      socket!.disconnect();
+      socket!.dispose(); // إضافة dispose() للتنظيف الكامل
+      socket = null;
+      isConnected.value = false;
+      reconnectTimer?.cancel();
+    }
+  }
+}

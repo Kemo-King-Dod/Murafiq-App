@@ -358,17 +358,10 @@ class DriverDetails extends StatelessWidget {
                 },
               ),
               _buildActionButton(
-                text: 'تصفير الرصيد',
-                color: systemColors.primary,
-                icon: Icons.money_off,
-                onPressed: () {
-                  controller.showConfirmationDialog(
-                    title: 'تصفير رصيد السائق',
-                    message: 'هل أنت متأكد من تصفير رصيد هذا السائق؟',
-                    onConfirm: () => controller.zeroDriverWallet(),
-                  );
-                },
-              ),
+                  text: 'سحب الرصيد',
+                  color: systemColors.primary,
+                  icon: Icons.money_off,
+                  onPressed:()=> controller.discountDriverWalletfun(balance: driver.balance)),
             ],
           ),
         if (driver.status == DriverStatus.blocked)

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:logger/logger.dart';
 import 'package:murafiq/admin/screens/admin_dashboard.dart';
 import 'package:murafiq/auth/OnboardingPage.dart';
 import 'package:murafiq/auth/customer_signup_page.dart';
+import 'package:murafiq/auth/driver_signup_page.dart';
+import 'package:murafiq/core/constant/AppRoutes.dart';
+import 'package:murafiq/core/controllers/socket_controller.dart';
 import 'package:murafiq/core/functions/classes/loading_controller.dart';
+import 'package:murafiq/core/locale/Locale.dart';
 import 'package:murafiq/core/locale/LocaleController.dart';
 import 'package:murafiq/core/middleware/auth_middleware.dart';
 import 'package:murafiq/core/screens/splash_screen.dart';
-import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/customer/public/screens/customer_home_page.dart';
 import 'package:murafiq/driver/public/screens/driver_home_page.dart';
 import 'package:murafiq/models/city.dart';
@@ -24,6 +28,7 @@ import 'auth/forgot_password_page.dart';
 import 'package:flutter/services.dart';
 
 SharedPreferences? shared;
+Logger printer = Logger();
 
 // Define app colors
 class AppColors {
@@ -61,18 +66,14 @@ void main() async {
   // Optional: Retrieve saved token to verify
   String? savedToken = await notificationService.getSavedFCMToken();
 
-  // Request notification permissions
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   NotificationSettings settings = await messaging.requestPermission();
 
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    print('User granted notification permissions');
-  } else {
-    print('User declined or has not accepted notification permissions');
-  }
-
   await GetStorage.init();
   shared = await SharedPreferences.getInstance();
+
+  // Initialize socket controller
+  Get.put(SocketController(), permanent: true);
 
   // Initialize AuthController
   Get.put(AuthController());
@@ -92,7 +93,7 @@ class MyApp extends StatelessWidget {
     FlutterNativeSplash.remove();
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Murafiq',
+      title: 'Murafiq'.tr,
       theme: ThemeData(
         primaryColor: AppColors.primary,
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
@@ -125,20 +126,27 @@ class MyApp extends StatelessWidget {
         ),
       ),
       locale: localeController.initialLang,
+      translations: TaxiLocale(),
       textDirection: TextDirection.rtl,
       home: const SplashScreen(),
       getPages: [
         GetPage(
-          name: '/start',
+          name: Approutes.onboardingPage,
           middlewares: [AuthMiddleware()],
           page: () => OnboardingPage(),
         ),
-        GetPage(name: '/login', page: () => LoginPage()),
-        GetPage(name: '/forgot-password', page: () => ForgotPasswordPage()),
-        GetPage(name: '/customer-signup', page: () => CustomerSignupPage()),
-        GetPage(name: '/customer-home', page: () => CustomerHomePage()),
-        GetPage(name: '/driver-home', page: () => DriverHomePage()),
-        GetPage(name: '/admin-dashboard', page: () => AdminDashboardPage()),
+        GetPage(name: Approutes.loginPage, page: () => LoginPage()),
+        GetPage(
+            name: Approutes.forgetPassword, page: () => ForgotPasswordPage()),
+        GetPage(
+            name: Approutes.customerSignupPage,
+            page: () => CustomerSignupPage()),
+        GetPage(
+            name: Approutes.driverSignupPage, page: () => DriverSignupPage()),
+        GetPage(name: Approutes.userHomePage, page: () => CustomerHomePage()),
+        GetPage(name: Approutes.driverHomePage, page: () => DriverHomePage()),
+        GetPage(
+            name: Approutes.adminHomePage, page: () => AdminDashboardPage()),
       ],
     );
   }

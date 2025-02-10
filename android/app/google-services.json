@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:646269948130:android:391fcb3d0e1fa9cc44cebb",
+        "mobilesdk_app_id": "1:646269948130:android:d5bb3098368819ff44cebb",
         "android_client_info": {
-          "package_name": "com.example.murafiq"
+          "package_name": "ly.murafiq.app"
         }
       },
       "oauth_client": [],

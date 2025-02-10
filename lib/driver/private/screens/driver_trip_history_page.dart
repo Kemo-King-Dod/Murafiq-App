@@ -36,7 +36,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
         ),
         backgroundColor: systemColors.primary,
         title: Text(
-          'سجل الرحلات',
+          'سجل الرحلات'.tr,
           style: systemTextStyle.mediumLight,
         ),
         centerTitle: true,
@@ -49,8 +49,8 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
         if (controller.trips.isEmpty) {
           return Center(
             child: Text(
-              'لا توجد رحلات سابقة',
-              style: TextStyle(fontSize: 18),
+              'لا توجد رحلات سابقة'.tr,
+              style:const TextStyle(fontSize: 18),
             ),
           );
         }
@@ -115,7 +115,10 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                     Expanded(
                       child: trip.startCity != trip.destinationCity
                           ? Text(
-                              'رحلة من ${trip.startCity} إلى ${trip.destinationCity}',
+                              'رحلة من'.tr +
+                                  '${trip.startCity}' +
+                                  "إلى".tr +
+                                  '${trip.destinationCity}',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -125,7 +128,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                               overflow: TextOverflow.ellipsis,
                             )
                           : Text(
-                              "رحلة محلية",
+                              "رحلة محلية".tr,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -231,7 +234,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
               children: [
                 userType == UserType.driver
                     ? Text(
-                        "الراكب",
+                        "الراكب".tr,
                         style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -239,7 +242,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                             color: systemColors.white),
                       )
                     : Text(
-                        "السائق",
+                        "السائق".tr,
                         style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -312,7 +315,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
         children: [
           _buildInfoItem(
             Icons.access_time,
-            'المدة \n ${trip.estimatedTime} دقيقة',
+            'المدة'.tr + '\n ${trip.estimatedTime} ' + 'دقيقة'.tr,
             iconColor: Colors.deepOrange.shade500,
             textColor: Colors.deepOrange.shade800,
           ),
@@ -323,7 +326,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
           ),
           _buildInfoItem(
             Icons.straighten,
-            'المسافة \n ${trip.distance.toStringAsFixed(2)} كم',
+            'المسافة'.tr + '\n ${trip.distance.toStringAsFixed(2)}' + 'كم'.tr,
             iconColor: Colors.deepPurple.shade500,
             textColor: Colors.deepPurple.shade800,
           ),
@@ -335,12 +338,12 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
           userType == UserType.driver
               ? _buildInfoItem(
                   Icons.monetization_on_outlined,
-                  'مستحقات \n ${trip.companyFee} د.ل',
+                  'مستحقات'.tr + '\n ${trip.companyFee} ' + 'د.ل'.tr,
                   iconColor: Colors.green.shade600,
                   textColor: Colors.green.shade900,
                 )
-              : _buildInfoItem(
-                  Clarity.organization_line, "المدينة \n ${trip.startCity}",
+              : _buildInfoItem(Clarity.organization_line,
+                  "المدينة".tr + '\n ${trip.startCity}',
                   iconColor: Colors.blue.shade600,
                   textColor: Colors.blue.shade900),
         ],
@@ -481,7 +484,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'تفاصيل الرحلة',
+                'تفاصيل الرحلة'.tr,
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -490,12 +493,14 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 20),
-              _buildDetailRow('رمز الرحلة', trip.TripCode!),
-              _buildDetailRow('المسافة', '${trip.distance} كم'),
-              _buildDetailRow('الوقت المقدر', '${trip.estimatedTime} دقيقة'),
+              _buildDetailRow('رمز الرحلة'.tr, trip.TripCode!),
+              _buildDetailRow('المسافة'.tr, '${trip.distance}' + 'كم'.tr),
               _buildDetailRow(
-                  'طريقة الدفع', _getPaymentMethodText(trip.paymentMethod)),
-              _buildDetailRow('رسوم الشركة', '${trip.companyFee} د.ل'),
+                  'الوقت المقدر'.tr, '${trip.estimatedTime}' + 'دقيقة'.tr),
+              _buildDetailRow(
+                  'طريقة الدفع'.tr, _getPaymentMethodText(trip.paymentMethod)),
+              _buildDetailRow(
+                  'رسوم الشركة'.tr, '${trip.companyFee}' + 'د.ل'.tr),
             ],
           ),
         ),
@@ -537,11 +542,11 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
   String _getPaymentMethodText(PaymentMethod method) {
     switch (method) {
       case PaymentMethod.cash:
-        return 'نقدي';
+        return 'نقدي'.tr;
       case PaymentMethod.wallet:
-        return 'محفظة';
+        return 'محفظة'.tr;
       default:
-        return 'غير محدد';
+        return 'غير محدد'.tr;
     }
   }
 
@@ -574,13 +579,13 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
   String _getTripStatusText(TripStatus? status) {
     switch (status) {
       case TripStatus.completed:
-        return 'مكتملة';
+        return 'مكتملة'.tr;
       case TripStatus.cancelled:
-        return 'ملغاة';
+        return 'ملغاة'.tr;
       case TripStatus.arrived:
-        return 'قيد التنفيذ';
+        return 'قيد التنفيذ'.tr;
       default:
-        return 'غير معروف';
+        return 'غير معروف'.tr;
     }
   }
 }

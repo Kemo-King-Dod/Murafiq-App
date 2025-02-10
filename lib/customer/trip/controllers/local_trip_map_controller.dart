@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:murafiq/core/controllers/socket_controller.dart';
+import 'package:murafiq/core/functions/GelocatorFun.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
+import 'package:murafiq/core/functions/getPrice.dart';
 import 'package:murafiq/core/functions/get_drivers_position.dart';
 import 'package:murafiq/core/functions/is_point_inside_polygon.dart';
-import 'package:murafiq/core/services/api_service.dart';
-import 'package:murafiq/customer/trip/screens/trip_waiting_page.dart';
+import 'package:murafiq/core/functions/socket_services.dart';
+import 'package:murafiq/main.dart';
 import 'package:murafiq/models/city.dart';
 import 'package:murafiq/models/trip.dart';
 import '../../../core/utils/systemVarible.dart';
@@ -20,6 +24,8 @@ class LocalTripMapController extends GetxController {
     required this.cityTo,
     this.lasttrip,
   });
+
+  SocketController socketController = Get.find<SocketController>();
 
   final cityAndBoundaryController = Get.find<CityAndBoundaryController>();
   final Trip? lasttrip;
@@ -55,12 +61,24 @@ class LocalTripMapController extends GetxController {
 
   Trip? waittingTrip;
   RxBool isThereTrip = false.obs;
+  RxDouble sheetPosition = 0.4.obs;
   BitmapDescriptor? customCarIcon;
   BitmapDescriptor? carInThisTrip;
+  BitmapDescriptor? _tripDriverIcon;
+  BitmapDescriptor? _availableDriverIcon;
+
+  void updateSheetPosition(double position) {
+    sheetPosition.value = position;
+  }
+
+  RxBool isReady = false.obs;
 
   @override
   void onInit() async {
     super.onInit();
+    await _loadIcons();
+    await socketController.socket.connectAndListen();
+
     _selectedDestination = Rx<LatLng?>(lasttrip?.destinationLocation ?? null);
 
     // Load custom car icon
@@ -120,6 +138,19 @@ class LocalTripMapController extends GetxController {
     }
   }
 
+  Future<void> _loadIcons() async {
+    try {
+      _tripDriverIcon = await BitmapDescriptor.asset(
+          const ImageConfiguration(size: Size(50, 50)),
+          "assets/images/UI/caryellow.png");
+      _availableDriverIcon = await BitmapDescriptor.asset(
+          const ImageConfiguration(size: Size(50, 50)),
+          "assets/images/UI/car.jpeg");
+    } catch (e) {
+      print("Error loading icons: $e");
+    }
+  }
+
   void _startLocationStream() async {
     try {
       // Check if location service is enabled
@@ -142,7 +173,7 @@ class LocalTripMapController extends GetxController {
       // Check location permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
+        await LocationService.handleLocationPermission(isDriver: false);
         if (permission == LocationPermission.denied) {
           print('Location permissions are denied');
           Get.snackbar(
@@ -216,14 +247,6 @@ class LocalTripMapController extends GetxController {
           duration: const Duration(seconds: 5),
         );
       });
-
-      // Initial drivers update
-      _updateDriversPositions();
-
-      // Start periodic updates every 20 seconds for drivers positions
-      _driversUpdateTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-        _updateDriversPositions();
-      });
     } catch (e) {
       print('Error in location updates: $e');
       Get.snackbar(
@@ -233,45 +256,6 @@ class LocalTripMapController extends GetxController {
         colorText: systemColors.white,
         duration: const Duration(seconds: 5),
       );
-    }
-  }
-
-  void _updateDriversPositions() async {
-    final response =
-        await GetDriversPosition.getDriversPOS(pos: _currentPosition.value);
-
-    if (response != null) {
-      if (response["data"]["driversPositions"] != null) {
-        _markers.removeWhere((marker) =>
-            marker.markerId.value != 'current_location' &&
-            marker.markerId.value != 'destination');
-        response["data"]["driversPositions"].forEach((position) async {
-          print("positionn: $position");
-
-          _markers.add(
-            position["_id"] == waittingTrip?.driver?.id
-                ? Marker(
-                    markerId: MarkerId(position["_id"].toString()),
-                    position: LatLng(position["position"]["latitude"],
-                        position["position"]["longitude"]),
-                    icon: carInThisTrip ??
-                        BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueCyan),
-                    infoWindow: const InfoWindow(title: 'موقع السائق'),
-                  )
-                : Marker(
-                    markerId: MarkerId(position["_id"].toString()),
-                    position: LatLng(position["position"]["latitude"],
-                        position["position"]["longitude"]),
-                    icon: customCarIcon ??
-                        BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueCyan),
-                    infoWindow: const InfoWindow(title: 'موقع السائق'),
-                  ),
-          );
-          update();
-        });
-      }
     }
   }
 
@@ -298,6 +282,8 @@ class LocalTripMapController extends GetxController {
   // Setup markers and polyline for inter-city trips
   void _setupInterCityTrip() {
     if (cityTo != city) {
+      isReady.value = true;
+      print("isReady: $isReady");
       // LatLng targetPoint = _getTargetPointForCity(cityTo);
       LatLng targetPoint = cityTo.center;
 
@@ -331,82 +317,184 @@ class LocalTripMapController extends GetxController {
   }
 
   // Handle map tap for destination selection
-  void onMapTap(LatLng tappedPoint) {
-    if (!isPointInsidePolygons(tappedPoint, cityTo.boundary.toSet())) return;
-
-    // Create a new set with existing markers excluding the destination
-    final newMarkers = _markers.value.toSet()
-      ..removeWhere((marker) => marker.markerId.value == 'destination');
-
-    // Add new destination marker to the set
-    newMarkers.add(
-      Marker(
-        markerId: const MarkerId('destination'),
-        position: tappedPoint,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: const InfoWindow(title: 'وجهتك'),
-      ),
-    );
-
-    // Update the markers reactively
-    _markers.value = newMarkers;
-    _selectedDestination.value = tappedPoint;
-
-    // Calculate trip distance
-    _calculateTripDistance(tappedPoint);
-
-    // Calculate trip price
-    _calculateTripPrice();
-  }
-
-  // Calculate trip distance
-  void _calculateTripDistance(LatLng tappedPoint) {
-    _tripDistance.value = Geolocator.distanceBetween(
-            _currentPosition.value.latitude,
-            _currentPosition.value.longitude,
-            tappedPoint.latitude,
-            tappedPoint.longitude) /
-        1000; // Convert to kilometers
-  }
-
-  // Calculate trip price based on distance
-  void _calculateTripPrice() {
-    final distance = _tripDistance.value;
-    if (cityTo == city) {
-      if (distance < 0.5) {
-        _tripPrice.value = 0;
-        _companyFee.value = 0;
-      } else if (distance >= 0.5 && distance < 1) {
-        _tripPrice.value = 7;
-        _companyFee.value = 2;
-      } else if (distance >= 1 && distance < 2) {
-        _tripPrice.value = 10;
-        _companyFee.value = 3;
-      } else if (distance >= 2 && distance < 3) {
-        _tripPrice.value = 15;
-        _companyFee.value = 3;
-      } else if (distance >= 3 && distance < 4) {
-        _tripPrice.value = 20;
-        _companyFee.value = 3;
-      } else {
-        _tripPrice.value = 25;
-        _companyFee.value = 3;
+  Future<void> onMapTap(LatLng tappedPoint) async {
+    try {
+      isReady.value = false;
+      if (!isPointInsidePolygons(tappedPoint, cityTo.boundary.toSet())) {
+        Get.snackbar(
+          "",
+          "يرجى اختيار نقطة داخل حدود المدينة",
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+        );
+        return;
       }
-    } else {
-      _tripPrice.value =
-          cityAndBoundaryController.calculatePriceToDiffrentCities(
-              city: city.Englishname, cityTo: cityTo.Englishname);
-      _companyFee.value = 5.0;
 
-      // if (cityTo == City.alQatrun.arabicName &&
-      //     city == City.alBakhi.arabicName) {
-      //   _tripPrice.value = 15;
-      //   _companyFee.value = 3;
-      // }
-      // if (cityTo == City.alQatrun.arabicName && city == City.sabha.arabicName) {
-      //   _tripPrice.value = 15;
-      //   _companyFee.value = 3;
-      // }
+      // Create a new set with existing markers excluding the destination
+      final newMarkers = _markers.value.toSet()
+        ..removeWhere((marker) => marker.markerId.value == 'destination');
+
+      // Add new destination marker to the set
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('destination'),
+          position: tappedPoint,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          infoWindow: const InfoWindow(title: 'وجهتك'),
+        ),
+      );
+
+      // Update the markers reactively
+      _markers.value = newMarkers;
+      _selectedDestination.value = tappedPoint;
+
+      // Calculate trip distance
+      _calculateTripDistance(tappedPoint);
+
+      // Calculate trip price and wait for it to complete
+      bool priceCalculated = await _calculateTripPrice();
+      if (!priceCalculated) {
+        Get.snackbar(
+          "",
+          "حدث خطأ في حساب السعر. يرجى المحاولة مرة أخرى",
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+        );
+        return;
+      }
+    } catch (e) {
+      print("Error in onMapTap: $e");
+      isReady.value = false;
+      Get.snackbar(
+        "",
+        "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى",
+        backgroundColor: systemColors.error,
+        colorText: systemColors.white,
+      );
+    }
+  }
+
+  // Confirm and create trip
+  Future<void> confirmTrip() async {
+    try {
+      await Future.delayed(Duration(seconds: 1));
+      // Ensure we have a valid destination
+      if (_selectedDestination.value == null) {
+        Get.snackbar("", "يرجى اختيار وجهتك أولاً".tr,
+            backgroundColor: systemColors.error, colorText: systemColors.white);
+        return;
+      }
+
+      // Ensure price is calculated and valid
+      if (!isReady.value || _tripPrice.value <= 0) {
+        bool priceCalculated = await _calculateTripPrice();
+        if (!priceCalculated) {
+          Get.snackbar(
+            "",
+            "حدث خطأ في حساب السعر. يرجى المحاولة مرة أخرى".tr,
+            backgroundColor: systemColors.error,
+            colorText: systemColors.white,
+          );
+          return;
+        }
+      }
+
+      // Validate trip distance
+      if (_tripDistance.value < 0.5) {
+        Get.snackbar(
+            "", "المسافة قصيرة جدًا. يجب أن تكون المسافة أكثر من 500 متر".tr,
+            backgroundColor: systemColors.error, colorText: systemColors.white);
+        return;
+      }
+
+      // Double check price is valid
+      if (_tripPrice.value <= 0) {
+        Get.snackbar(
+          "",
+          "لم يتم حساب السعر بشكل صحيح. يرجى المحاولة مرة أخرى".tr,
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+        );
+        return;
+      }
+
+      // Create trip object
+      final trip = Trip(
+        startCity: city.Arabicname,
+        destinationCity: cityTo.Arabicname,
+        startLocation: _currentPosition.value,
+        destinationLocation: _selectedDestination.value,
+        distance: _tripDistance.value,
+        estimatedTime: (_tripDistance.value / 10).ceil() * 10, // Minutes
+        price: _tripPrice.value,
+        companyFee: _companyFee.value,
+        driverType: _selectedDriverType.value,
+        tripType: city != cityTo ? TripType.intercity : TripType.local,
+        status: TripStatus.searching,
+        createdAt: DateTime.now(),
+        paymentMethod: _selectedPaymentMethod.value,
+      );
+      try {
+        // Send trip request to backend
+        final response = await sendRequestWithHandler(
+          endpoint: '/trips/newTrip',
+          method: 'POST',
+          body: trip.toJson(),
+          loadingMessage: 'جاري إنشاء الرحلة...'.tr,
+        );
+        socketController.socket.updateDriver(data: {
+          "func": "new-trip",
+          "tripId": response["data"]["trip"]["_id"]
+        });
+
+        if (response != null) {
+          if (response['status'].toString() == 'success') {
+            final Trip tripFromResponse =
+                Trip.fromJson(response["data"]["trip"]);
+            waittingTrip = tripFromResponse;
+            isThereTrip.value = true;
+            // Get.to(() => TripWaitingPage(trip: tripFromResponse));
+          } else if (response["status"] == "fail" &&
+              response["message"] != null &&
+              response["data"] == null) {
+            Get.snackbar(
+              "",
+              response["message"].toString(),
+              backgroundColor: systemColors.error,
+              colorText: systemColors.white,
+            );
+          } else if (response["data"]["trip"] != null) {
+            Get.snackbar(
+              "",
+              response["message"].toString(),
+              backgroundColor: systemColors.error,
+              colorText: systemColors.white,
+            );
+
+            final Trip tripFromResponse =
+                Trip.fromJson(response["data"]["trip"]);
+            waittingTrip = tripFromResponse;
+            isThereTrip.value = true;
+            // Navigate to trip waiting page
+            // Get.to(() => TripWaitingPage(trip: tripFromResponse));
+          }
+        }
+      } catch (e) {
+        Get.snackbar(
+          e.toString(),
+          "حدث خطأ أثناء إنشاء الرحلة. يرجى المحاولة مرة أخرى".tr,
+          backgroundColor: systemColors.error,
+          colorText: systemColors.white,
+        );
+      }
+    } catch (e) {
+      print("Error in confirmTrip: $e");
+      Get.snackbar(
+        "",
+        "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى",
+        backgroundColor: systemColors.error,
+        colorText: systemColors.white,
+      );
     }
   }
 
@@ -423,89 +511,6 @@ class LocalTripMapController extends GetxController {
   // Set payment method
   void setPaymentMethod(PaymentMethod method) {
     _selectedPaymentMethod.value = method;
-  }
-
-  // Confirm and create trip
-  Future<void> confirmTrip() async {
-    // Validate destination selection
-    if (_selectedDestination.value == null) {
-      Get.snackbar("", "يرجى اختيار وجهتك أولاً",
-          backgroundColor: systemColors.error);
-      return;
-    }
-
-    // Validate trip distance
-    if (_tripDistance.value < 0.5) {
-      Get.snackbar(
-          "", "المسافة قصيرة جدًا. يجب أن تكون المسافة أكثر من 500 متر",
-          backgroundColor: systemColors.error, colorText: systemColors.white);
-      return;
-    }
-
-    // Create trip object
-    final trip = Trip(
-      startCity: city.Arabicname,
-      destinationCity: cityTo.Arabicname,
-      startLocation: _currentPosition.value,
-      destinationLocation: _selectedDestination.value,
-      distance: _tripDistance.value,
-      estimatedTime: (_tripDistance.value / 10).ceil() * 10, // Minutes
-      price: _tripPrice.value,
-      companyFee: _companyFee.value,
-      driverType: _selectedDriverType.value,
-      tripType: city != cityTo ? TripType.intercity : TripType.local,
-      status: TripStatus.searching,
-      createdAt: DateTime.now(),
-      paymentMethod: _selectedPaymentMethod.value,
-    );
-    try {
-      // Send trip request to backend
-      final response = await sendRequestWithHandler(
-        endpoint: '/trips/newTrip',
-        method: 'POST',
-        body: trip.toJson(),
-        loadingMessage: 'جاري إنشاء الرحلة...',
-      );
-
-      if (response != null) {
-        print(response.toString());
-        if (response['status'].toString() == 'success') {
-          final Trip tripFromResponse = Trip.fromJson(response["data"]["trip"]);
-          waittingTrip = tripFromResponse;
-          isThereTrip.value = true;
-          // Get.to(() => TripWaitingPage(trip: tripFromResponse));
-        } else if (response["status"] == "fail" &&
-            response["message"] != null &&
-            response["data"] == null) {
-          Get.snackbar(
-            "",
-            response["message"].toString(),
-            backgroundColor: systemColors.error,
-            colorText: systemColors.white,
-          );
-        } else if (response["data"]["trip"] != null) {
-          Get.snackbar(
-            "",
-            response["message"].toString(),
-            backgroundColor: systemColors.error,
-            colorText: systemColors.white,
-          );
-
-          final Trip tripFromResponse = Trip.fromJson(response["data"]["trip"]);
-          waittingTrip = tripFromResponse;
-          isThereTrip.value = true;
-          // Navigate to trip waiting page
-          // Get.to(() => TripWaitingPage(trip: tripFromResponse));
-        }
-      }
-    } catch (e) {
-      Get.snackbar(
-        e.toString(),
-        "حدث خطأ أثناء إنشاء الرحلة. يرجى المحاولة مرة أخرى",
-        backgroundColor: systemColors.error,
-        colorText: systemColors.white,
-      );
-    }
   }
 
   // Calculate center point between two locations
@@ -534,15 +539,6 @@ class LocalTripMapController extends GetxController {
     );
   }
 
-  // Getters for reactive variables
-  LatLng get currentPosition => _currentPosition.value;
-  LatLng? get selectedDestination => _selectedDestination.value;
-  double get tripDistance => _tripDistance.value;
-  double get tripPrice => _tripPrice.value;
-  bool get isSatelliteView => _isSatelliteView.value;
-  DriverType get selectedDriverType => _selectedDriverType.value;
-  PaymentMethod get selectedPaymentMethod => _selectedPaymentMethod.value;
-
   void _setupBoundaries() {
     Boundries = {
       Polygon(
@@ -561,4 +557,51 @@ class LocalTripMapController extends GetxController {
       ),
     };
   }
+
+  // Calculate trip distance
+  void _calculateTripDistance(LatLng tappedPoint) {
+    _tripDistance.value = Geolocator.distanceBetween(
+            _currentPosition.value.latitude,
+            _currentPosition.value.longitude,
+            tappedPoint.latitude,
+            tappedPoint.longitude) /
+        1000; // Convert to kilometers
+  }
+
+  // Calculate trip price based on distance
+  Future<bool> _calculateTripPrice() async {
+    try {
+      isReady.value = false;
+      final distance = _tripDistance.value;
+      if (cityTo == city) {
+        print("Same city");
+        var price = await GetPrice.getPrice(distance: distance);
+        _tripPrice.value = price["_tripPrice"].toDouble();
+        _companyFee.value = price["_companyFee"].toDouble();
+      } else {
+        var price =
+            await cityAndBoundaryController.calculatePriceToDiffrentCities(
+                city: city.Englishname, cityTo: cityTo.Englishname);
+        print("price:$price");
+        _tripPrice.value = price["price"].toDouble();
+        _companyFee.value = price["_companyFee"].toDouble();
+      }
+      isReady.value = true;
+      return true;
+    } catch (e) {
+      print("Error calculating price: $e");
+      isReady.value = false;
+      return false;
+    }
+  }
+
+  // Getters for reactive variables
+  String get userGender => shared!.getString("user_gender") ?? "";
+  LatLng get currentPosition => _currentPosition.value;
+  LatLng? get selectedDestination => _selectedDestination.value;
+  double get tripDistance => _tripDistance.value;
+  double get tripPrice => _tripPrice.value;
+  bool get isSatelliteView => _isSatelliteView.value;
+  DriverType get selectedDriverType => _selectedDriverType.value;
+  PaymentMethod get selectedPaymentMethod => _selectedPaymentMethod.value;
 }

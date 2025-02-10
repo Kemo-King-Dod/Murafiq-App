@@ -2,101 +2,87 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:murafiq/admin/controllers/transactions_details_controller.dart';
+import 'package:murafiq/admin/subScreens/admin_transactions.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
+import 'package:murafiq/driver/private/supScreens/allTransactions.dart';
 import 'package:murafiq/models/transaction.dart';
 import 'package:intl/intl.dart' as intl;
 
-class TransactionsManagementPage extends StatefulWidget {
+class TransactionsManagementPage
+    extends GetView<TransactionsDetailsController> {
   const TransactionsManagementPage({Key? key}) : super(key: key);
 
   @override
-  _TransactionsManagementPageState createState() =>
-      _TransactionsManagementPageState();
-}
-
-class _TransactionsManagementPageState extends State<TransactionsManagementPage>
-    with SingleTickerProviderStateMixin {
-  List<Transaction> allTransactions = [];
-  List<Transaction> filteredTransactions = [];
-  TransactionType _selectedType = TransactionType.all;
-  String _searchQuery = '';
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-  double totalBalance = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTransactions();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
+  Widget build(BuildContext context) {
+    Get.put(TransactionsDetailsController());
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: systemColors.primary,
+        title: Text(
+          'إدارة المعاملات',
+          style:
+              TextStyle(fontWeight: FontWeight.bold, color: systemColors.white),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        leading: Container(
+          margin: EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: systemColors.white,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: systemColors.primary,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: GetBuilder<TransactionsDetailsController>(
+          builder: (controller) => Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildCompanyBalanceCard(controller),
+                SizedBox(height: 16),
+                _buildAnisBalanceCard(controller),
+                SizedBox(height: 16),
+                _buildFilterSection(controller),
+                SizedBox(height: 16),
+                controller.filteredTransactions.isEmpty
+                    ? Container(
+                        height: 150,
+                        width: 150,
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: systemColors.primary,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: SpinKitWave(
+                          color: systemColors.white,
+                          size: 50.0,
+                        ),
+                      )
+                    : _buildTransactionsList(controller),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
-    _animationController.forward();
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _loadTransactions() async {
-    print(1);
-    final response = await sendRequestWithHandler(
-      endpoint: "/admin/transactions",
-      method: "GET",
-    );
-    if (response != null && response['data'] != null) {
-      totalBalance = response['data']['companyBalance']["balance"].toDouble();
-      final transactionsList = response['data']['transactions'] as List? ?? [];
-      allTransactions.addAll(transactionsList
-          .map((transactionData) => Transaction.fromJson(transactionData))
-          .toList());
-    }
-    setState(() {
-      // allTransactions = [
-      //   Transaction(
-      //     description: 'سحب من محفظة السائق',
-      //     amount: 500.0,
-      //     isCredit: false,
-      //     date: DateTime.now(),
-      //   ),
-      //   Transaction(
-      //     description: 'دفعة من العميل',
-      //     amount: 250.0,
-      //     isCredit: true,
-      //     date: DateTime.now().subtract(Duration(days: 2)),
-      //   ),
-      // ];
-
-      _applyFilters();
-    });
-  }
-
-  void _applyFilters() {
-    filteredTransactions = allTransactions.where((transaction) {
-      final matchesType = _selectedType == TransactionType.all ||
-          ((_selectedType == TransactionType.credit && transaction.isCredit) ||
-              (_selectedType == TransactionType.debit &&
-                  !transaction.isCredit));
-      final matchesSearch = transaction.description
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase());
-      return matchesType && matchesSearch;
-    }).toList();
-  }
-
-  Widget _buildCompanyBalanceCard() {
+  Widget _buildCompanyBalanceCard(TransactionsDetailsController controller) {
     return FadeTransition(
-      opacity: _animation,
+      opacity: controller.animation,
       child: ScaleTransition(
-        scale: _animation,
+        scale: controller.animation,
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -130,7 +116,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
               ),
               SizedBox(height: 10),
               Text(
-                totalBalance.toString() + "د.ل",
+                controller.totalBalance.toString() + "د.ل",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 32,
@@ -145,7 +131,60 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
     );
   }
 
-  Widget _buildFilterSection() {
+  Widget _buildAnisBalanceCard(TransactionsDetailsController controller) {
+    return FadeTransition(
+      opacity: controller.animation,
+      child: ScaleTransition(
+        scale: controller.animation,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.orange.withValues(alpha: 0.8),
+                Colors.orange,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: systemColors.primary.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: Offset(0, 10),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'كروت انيس المعبئة',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                controller.anisBalance.toString() + "د.ل",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterSection(TransactionsDetailsController controller) {
     return Row(
       children: [
         Expanded(
@@ -180,10 +219,9 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
                 ),
               ),
               onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                  _applyFilters();
-                });
+                controller.searchQuery = value;
+                controller.applyFilters();
+                controller.update();
               },
             ),
           ),
@@ -206,7 +244,7 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<TransactionType>(
-                value: _selectedType,
+                value: controller.selectedType,
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 style: TextStyle(
@@ -222,10 +260,9 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
                   );
                 }).toList(),
                 onChanged: (type) {
-                  setState(() {
-                    _selectedType = type ?? TransactionType.all;
-                    _applyFilters();
-                  });
+                  controller.selectedType = type ?? TransactionType.all;
+                  controller.applyFilters();
+                  controller.update();
                 },
                 icon: Icon(
                   Icons.filter_list,
@@ -252,158 +289,196 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
     }
   }
 
-  Widget _buildTransactionsList() {
+  Widget _buildTransactionsList(TransactionsDetailsController controller) {
     return Expanded(
-      child: filteredTransactions.isEmpty
+      child: controller.filteredTransactions.isEmpty
           ? _buildEmptyStateWidget()
-          : Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.blueGrey.shade700.withValues(alpha: 0.9),
-                    Colors.blueGrey.shade800.withValues(alpha: 0.8),
-                  ],
+          : Column(
+              spacing: 10,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 200,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [
+                      Colors.black.withValues(alpha: 0.75),
+                      Colors.black.withValues(alpha: 0.85),
+                      Colors.black.withValues(alpha: 0.9),
+                    ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Get.to(() => AdminTransactions());
+                    },
+                    child: Text(
+                      "عرض الكل",
+                      style: systemTextStyle.mediumLight,
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                    ),
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: ListView.separated(
-                itemCount: filteredTransactions.length,
-                separatorBuilder: (context, index) => Divider(
-                  height: 1,
-                  color: Colors.grey.withValues(alpha: 0.1),
-                  indent: 70,
-                  endIndent: 16,
-                ),
-                itemBuilder: (context, index) {
-                  final transaction = filteredTransactions[index];
-                  return FadeTransition(
-                    opacity: _animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: Offset(0.1, 0),
-                        end: Offset.zero,
-                      ).animate(_animationController),
-                      child: Container(
-                        margin: EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                              spreadRadius: 1,
-                              blurRadius: 12,
-                              offset: Offset(0, 5),
+                Container(
+                  height: 300,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.blueGrey.shade700.withValues(alpha: 0.9),
+                        Colors.blueGrey.shade800.withValues(alpha: 0.8),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  child: ListView.separated(
+                    itemCount: controller.filteredTransactions.length,
+                    separatorBuilder: (context, index) => Divider(
+                      height: 1,
+                      color: Colors.grey.withValues(alpha: 0.1),
+                      indent: 70,
+                      endIndent: 16,
+                    ),
+                    itemBuilder: (context, index) {
+                      final transaction =
+                          controller.filteredTransactions[index];
+                      return FadeTransition(
+                        opacity: controller.animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: Offset(0.1, 0),
+                            end: Offset.zero,
+                          ).animate(controller.animationController),
+                          child: Container(
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withValues(alpha: 0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 12,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(15),
-                            onTap: () {
-                              _showTransactionDetailsBottomSheet(transaction);
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: transaction.isCredit
-                                          ? Colors.greenAccent.shade400
-                                              .withValues(alpha: 0.2)
-                                          : Colors.redAccent.shade400
-                                              .withValues(alpha: 0.2),
-                                    ),
-                                    padding: EdgeInsets.all(20),
-                                    child: Icon(
-                                      transaction.isCredit
-                                          ? Icons.arrow_upward
-                                          : Icons.arrow_downward,
-                                      color: transaction.isCredit
-                                          ? Colors.greenAccent.shade400
-                                          : Colors.redAccent.shade400,
-                                      size: 20,
-                                    ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(15),
+                                onTap: () {
+                                  _showTransactionDetailsBottomSheet(
+                                      Get.context!, transaction);
+                                },
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
                                   ),
-                                  SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      spacing: 4,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          transaction.description,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          intl.DateFormat('dd/MM/yyyy HH:mm')
-                                              .format(transaction.date),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        '${transaction.amount.toStringAsFixed(2)} د.ل',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: transaction.isCredit
+                                              ? Colors.greenAccent.shade400
+                                                  .withValues(alpha: 0.2)
+                                              : Colors.redAccent.shade400
+                                                  .withValues(alpha: 0.2),
+                                        ),
+                                        padding: EdgeInsets.all(20),
+                                        child: Icon(
+                                          transaction.isCredit
+                                              ? Icons.arrow_upward
+                                              : Icons.arrow_downward,
                                           color: transaction.isCredit
                                               ? Colors.greenAccent.shade400
                                               : Colors.redAccent.shade400,
-                                          fontSize: 15,
+                                          size: 20,
                                         ),
                                       ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        transaction.isCredit ? 'إيداع' : 'سحب',
-                                        style: TextStyle(
-                                          color: transaction.isCredit
-                                              ? Colors.greenAccent.shade400
-                                              : Colors.redAccent.shade400,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
+                                      SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          spacing: 4,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              transaction.description,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              intl.DateFormat(
+                                                      'dd/MM/yyyy HH:mm')
+                                                  .format(transaction.date),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            '${transaction.amount.toStringAsFixed(2)} د.ل',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: transaction.isCredit
+                                                  ? Colors.greenAccent.shade400
+                                                  : Colors.redAccent.shade400,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            transaction.isCredit
+                                                ? 'إيداع'
+                                                : 'سحب',
+                                            style: TextStyle(
+                                              color: transaction.isCredit
+                                                  ? Colors.greenAccent.shade400
+                                                  : Colors.redAccent.shade400,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
     );
   }
 
-  void _showTransactionDetailsBottomSheet(Transaction transaction) {
+  void _showTransactionDetailsBottomSheet(
+      BuildContext context, Transaction transaction) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -539,65 +614,6 @@ class _TransactionsManagementPageState extends State<TransactionsManagementPage>
             textAlign: TextAlign.center,
           ),
         ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: systemColors.primary,
-        title: Text(
-          'إدارة المعاملات',
-          style:
-              TextStyle(fontWeight: FontWeight.bold, color: systemColors.white),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        leading: Container(
-          margin: EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: systemColors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: systemColors.primary,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              _buildCompanyBalanceCard(),
-              SizedBox(height: 16),
-              _buildFilterSection(),
-              SizedBox(height: 16),
-              filteredTransactions.isEmpty
-                  ? Container(
-                      height: 150,
-                      width: 150,
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: systemColors.primary,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: SpinKitWave(
-                        color: systemColors.white,
-                        size: 50.0,
-                      ),
-                    )
-                  : _buildTransactionsList(),
-            ],
-          ),
-        ),
       ),
     );
   }

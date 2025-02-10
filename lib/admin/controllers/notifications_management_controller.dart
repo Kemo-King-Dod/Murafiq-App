@@ -145,8 +145,6 @@ class NotificationsManagementController extends GetxController {
         loadingMessage: "جاري التحميل",
       );
 
-      print(response.toString());
-
       if (response != null &&
           response['data'] != null &&
           response["data"]["notifications"] != null) {
@@ -158,7 +156,6 @@ class NotificationsManagementController extends GetxController {
             .toList();
       }
     } catch (e) {
-      print('Error fetching notifications: $e');
       Get.snackbar(
         'خطاء',
         'حدث خطاء أثناء جلب الإشعارات',

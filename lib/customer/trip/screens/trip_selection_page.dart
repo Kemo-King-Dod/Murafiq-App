@@ -3,18 +3,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:murafiq/core/constant/citiesBoundries.dart';
-import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/functions/is_point_inside_polygon.dart';
+import 'package:murafiq/main.dart';
 import 'package:murafiq/models/city.dart';
-import 'package:murafiq/models/trip.dart';
 import '../../../core/utils/systemVarible.dart';
 import '../../../core/utils/text_styles.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 import '../../../core/functions/GelocatorFun.dart';
 import 'local_trip_map_page.dart';
-import 'dart:math';
 
 class TripSelectionPage extends StatefulWidget {
   const TripSelectionPage({Key? key}) : super(key: key);
@@ -25,13 +22,13 @@ class TripSelectionPage extends StatefulWidget {
 
 class _TripSelectionPageState extends State<TripSelectionPage> {
   List<String> _features = [
-    "رحلات آمنة ومريحة مع أفضل المرشدين السياحيين",
-    "اكتشف أجمل المعالم السياحية في مدينتك",
-    "تجربة سفر فريدة مع مرافق متخصص",
-    "خدمة عملاء على مدار الساعة",
-    "أسعار تنافسية ومناسبة للجميع",
-    "تتبع رحلتك مباشرة عبر التطبيق",
-    "استمتع برحلة مميزة مع مرافق"
+    "رحلات آمنة ومريحة مع أفضل المرشدين السياحيين".tr,
+    "اكتشف أجمل المعالم السياحية في مدينتك".tr,
+    "تجربة سفر فريدة مع مرافق متخصص".tr,
+    "خدمة عملاء على مدار الساعة".tr,
+    "أسعار تنافسية ومناسبة للجميع".tr,
+    "تتبع رحلتك مباشرة عبر التطبيق".tr,
+    "استمتع برحلة مميزة مع مرافق".tr
   ];
 
   final List<String> _images = [
@@ -91,113 +88,55 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
   }
 
   Future<void> _handleLocalTripSelection({CityAndBoundary? cityTo}) async {
+    printer.w("location permission");
     try {
-      await cityAndBoundaryController.fetchCitiesandBoundaries();
-
-      // Check location services first
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        Get.back(); // Close loading dialog if open
-        Get.snackbar(
-          "تنبيه",
-          "خدمة تحديد الموقع غير مفعلة",
-          backgroundColor: systemColors.error,
-          colorText: systemColors.white,
-          duration: const Duration(seconds: 5),
-        );
-        await Geolocator.openLocationSettings();
+      final hasPermission =
+          await LocationService.handleLocationPermission(isDriver: false);
+      if (!hasPermission) {
         return;
       }
+      systemUtils.loadingPop("جاري تحديد موقعك".tr, canPop: true);
 
-      // Check location permission
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          Get.back(); // Close loading dialog if open
-          Get.snackbar(
-            "تنبيه",
-            "لم يتم السماح بالوصول إلى الموقع",
-            backgroundColor: systemColors.error,
-            colorText: systemColors.white,
-            duration: const Duration(seconds: 5),
-          );
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        Get.back(); // Close loading dialog if open
-        Get.snackbar(
-          "تنبيه",
-          "تم رفض الوصول إلى الموقع بشكل دائم. يرجى تفعيل الصلاحية من إعدادات التطبيق",
-          backgroundColor: systemColors.error,
-          colorText: systemColors.white,
-          duration: const Duration(seconds: 5),
-        );
-        await Geolocator.openAppSettings();
-        return;
-      }
-
-      systemUtils.loadingPop("جاري تحديد موقعك", canPop: true);
-      
       Position? position = await LocationService.getCurrentLocation();
       if (position != null) {
-        // استخدام الدالة الجديدة لتحديد الموقع
-
         LatLng currentPosition = LatLng(position.latitude, position.longitude);
         CityAndBoundary? currentCity;
-        cityAndBoundaryController.citiesAndBoundaries.map((e) {
-          if (isPointInsidePolygons(currentPosition, e.boundary.toSet())) {
-            currentCity = e;
-            return currentCity;
+
+        // Ensure cities are loaded
+        if (cityAndBoundaryController.citiesAndBoundaries.isEmpty) {
+          await cityAndBoundaryController.fetchCitiesandBoundaries();
+        }
+
+        // Find current city
+        for (var city in cityAndBoundaryController.citiesAndBoundaries) {
+          if (isPointInsidePolygons(currentPosition, city.boundary.toSet())) {
+            currentCity = city;
+            break;
           }
-        }).toList();
+        }
+
+        Get.back(); // Close loading dialog
+
         if (currentCity == null) {
-          Get.back();
-          // Handle case when location is not in any known boundary
           _showLocationErrorDialog(
-              'موقعك الحالي غير مدعوم سنظيفه قريبا باذن الله');
+              'موقعك الحالي غير مدعوم سنظيفه قريبا باذن الله'.tr);
           return;
         }
 
-        // if (isPointInsidePolygons(currentPosition, Qatronboundaries)) {
-        //   currentCity = City.alQatrun.arabicName;
-        // } else if (isPointInsidePolygons(currentPosition, Bakhiboundaries)) {
-        //   currentCity = City.alBakhi.arabicName;
-        // } else if (isPointInsidePolygons(
-        //     currentPosition, QasirMasaoodboundaries)) {
-        //   currentCity = City.qasrMasud.arabicName;
-        // } else if (isPointInsidePolygons(currentPosition, Aljensiaboundaries)) {
-        //   currentCity = City.alJinsiya.arabicName;
-        // } else if (isPointInsidePolygons(currentPosition, Sebhaboundaries)) {
-        //   currentCity = City.sabha.arabicName;
-        // } else {
-        //   Get.back();
-        //   // Handle case when location is not in any known boundary
-        //   _showLocationErrorDialog(
-        //       'موقعك الحالي غير مدعوم سنظيفه قريبا باذن الله');
-        //   return;
-        // }
-        Get.back();
-        // انتقل إلى صفحة الخريطة مع الموقع
-        if (currentCity != null) {
-          Get.to(
-            () => LocalTripMapPage(
-              initialPosition: LatLng(position.latitude, position.longitude),
-              city: currentCity!,
-              cityTo:
-                  cityTo != null && cityTo.Arabicname != currentCity!.Arabicname
-                      ? cityTo
-                      : currentCity!,
-            ),
-          );
-        }
-      } else {
-        print('error');
+        // Navigate to map page
+        Get.to(
+          () => LocalTripMapPage(
+            initialPosition: currentPosition,
+            city: currentCity!,
+            cityTo:
+                cityTo != null && cityTo.Arabicname != currentCity!.Arabicname
+                    ? cityTo
+                    : currentCity!,
+          ),
+        );
       }
     } catch (e) {
-      // عرض رسالة خطأ في حالة فشل تحديد الموقع
+      Get.back(); // Close loading dialog
       _showLocationErrorDialog(e.toString());
     }
   }
@@ -208,7 +147,7 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            "موقعك الحالي غير مدعوم",
+            "موقعك الحالي غير مدعوم".tr,
             style: AppTextStyles.h3.copyWith(color: systemColors.primary),
             textAlign: TextAlign.center,
           ),
@@ -223,7 +162,7 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                 Navigator.of(context).pop();
               },
               child: Text(
-                'حسناً',
+                'حسناً'.tr,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: systemColors.primary,
                 ),
@@ -236,7 +175,9 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
   }
 
   void _showExternalTripCitySelector() async {
+    systemUtils.loadingPop("جاري تحميل المدن".tr, canPop: false);
     await cityAndBoundaryController.fetchCitiesandBoundaries();
+    Get.back();
 
     showModalBottomSheet(
       context: context,
@@ -254,7 +195,7 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'اختر وجهتك',
+                  'اختر وجهتك'.tr,
                   style: AppTextStyles.h3.copyWith(
                     color: systemColors.primary,
                     fontWeight: FontWeight.bold,
@@ -277,7 +218,7 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                         child: DropdownButton<CityAndBoundary>(
                           isExpanded: true,
                           hint: Text(
-                            'اختر المدينة',
+                            'اختر المدينة'.tr,
                             style: AppTextStyles.bodyMedium.copyWith(
                               color:
                                   systemColors.primary.withValues(alpha: 0.7),
@@ -346,156 +287,140 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Image at the top
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 500),
-                opacity: _opacity,
-                child: SvgPicture.asset(
-                  _images[_currentFeatureIndex % _images.length],
-                  height: 250,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 30),
-
-              // Animated Features Text
-              SizedBox(
-                height: 80,
-                child: AnimatedSwitcher(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Image at the top
+                AnimatedOpacity(
                   duration: const Duration(milliseconds: 500),
-                  switchInCurve: Curves.easeInOut,
-                  switchOutCurve: Curves.easeInOut,
-                  transitionBuilder:
-                      (Widget child, Animation<double> animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.0, 0.5),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Opacity(
-                    opacity: _opacity,
-                    child: Text(
-                      _features[_currentFeatureIndex % _features.length],
-                      key: ValueKey<int>(_currentFeatureIndex),
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: systemColors.primary,
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                  opacity: _opacity,
+                  child: SvgPicture.asset(
+                    _images[_currentFeatureIndex % _images.length],
+                    height: 250,
+                    fit: BoxFit.contain,
                   ),
                 ),
-              ),
+                const SizedBox(height: 30),
 
-              const SizedBox(height: 40),
-              // Local Trip Button
-              Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  gradient: LinearGradient(
-                    colors: [
-                      systemColors.primary,
-                      systemColors.primary.withValues(alpha: 0.9),
-                    ],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: systemColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _handleLocalTripSelection,
-                    borderRadius: BorderRadius.circular(15),
-                    splashColor: Colors.white.withValues(alpha: 0.2),
-                    highlightColor: systemColors.primary.withValues(alpha: 0.8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          FaIcon(
-                            FontAwesomeIcons.locationDot,
-                            color: systemColors.white,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'رحلة في مدينتي',
-                            style: AppTextStyles.buttonLarge,
-                          ),
-                        ],
+                // Animated Features Text
+                SizedBox(
+                  height: 80,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    switchInCurve: Curves.easeInOut,
+                    switchOutCurve: Curves.easeInOut,
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.0, 0.5),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Opacity(
+                      opacity: _opacity,
+                      child: Text(
+                        _features[_currentFeatureIndex % _features.length],
+                        key: ValueKey<int>(_currentFeatureIndex),
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: systemColors.primary,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              // External Trip Button
-              Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  gradient: LinearGradient(
-                    colors: [
-                      systemColors.primaryGoust,
-                      systemColors.primaryGoust.withValues(alpha: 0.7),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: systemColors.primary.withValues(alpha: 0.15),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+
+                const SizedBox(height: 40),
+                // Local Trip Button
+                InkWell(
+                  onTap: _handleLocalTripSelection,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    height: 160,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: systemColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                    BoxShadow(
-                      color: systemColors.primary.withValues(alpha: 0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _showExternalTripCitySelector,
-                    borderRadius: BorderRadius.circular(15),
-                    splashColor: systemColors.primary.withValues(alpha: 0.1),
-                    highlightColor:
-                        systemColors.primaryGoust.withValues(alpha: 0.2),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Stack(
                         children: [
-                          FaIcon(
-                            FontAwesomeIcons.map,
-                            color: systemColors.primary,
-                            size: 20,
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerRight,
+                                  end: Alignment.centerLeft,
+                                  colors: [
+                                    systemColors.primary.withOpacity(0.85),
+                                    systemColors.primary.withOpacity(0.75),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'رحلة خارجية',
-                            style: AppTextStyles.buttonLarge.copyWith(
-                              color: systemColors.primary,
+                          // Base SVG Background
+                          Positioned.fill(
+                            child: SvgPicture.asset(
+                              'assets/SVG/city.svg',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          // Colored Overlay
+
+                          // Content Layer
+                          Positioned.fill(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: FaIcon(
+                                      FontAwesomeIcons.locationDot,
+                                      color: systemColors.primary,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'رحلة في مدينتي'.tr,
+                                    style: AppTextStyles.h3.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'تنقل بسهولة داخل مدينتك'.tr,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -503,8 +428,99 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                // External Trip Button
+                InkWell(
+                  onTap: _showExternalTripCitySelector,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    height: 160,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.white.withOpacity(0.95),
+                                    Colors.white.withOpacity(0.9),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Base SVG Background
+                          Positioned.fill(
+                            child: SvgPicture.asset(
+                              'assets/SVG/intercity.svg',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          // White Overlay
+
+                          // Content Layer
+                          Positioned.fill(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: systemColors.primary
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: FaIcon(
+                                      FontAwesomeIcons.map,
+                                      color: systemColors.primary,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'رحلة خارجية'.tr,
+                                    style: AppTextStyles.h3.copyWith(
+                                      color: systemColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'سافر بين المدن بأمان'.tr,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -3,6 +3,12 @@ import 'package:get/get.dart';
 import 'package:murafiq/driver/public/controllers/driver_notifications_controller.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 
+  /// A page that displays driver notifications.
+  ///
+  /// This page shows a list of notifications for the driver, allowing them to
+  /// view details and manage them. If there are no notifications, a message
+  /// indicating the absence of notifications is displayed. Notifications can be
+  /// dismissed by swiping, and their read status is visually indicated.
 class DriverNotificationsPage extends GetView<DriverNotificationsController> {
   const DriverNotificationsPage({Key? key}) : super(key: key);
 
@@ -14,7 +20,7 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
     return Scaffold(
       appBar: AppBar(
         leading: Container(
-          margin: EdgeInsets.all(5),
+          margin: const EdgeInsets.all(5),
           decoration: BoxDecoration(
             color: systemColors.white,
             borderRadius: BorderRadius.circular(10),
@@ -29,20 +35,10 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
         ),
         backgroundColor: systemColors.primary,
         title: Text(
-          'الإشعارات',
+          'الإشعارات'.tr,
           style: systemTextStyle.mediumLight,
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.clear_all,
-              color: systemColors.white,
-            ),
-            onPressed: controller.clearAllNotifications,
-            tooltip: 'مسح كل الإشعارات',
-          ),
-        ],
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -59,7 +55,7 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -75,7 +71,7 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
                         color: systemColors.primary.withValues(alpha: 0.3),
                         spreadRadius: 3,
                         blurRadius: 10,
-                        offset: Offset(0, 5),
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -85,7 +81,7 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
                     color: systemColors.white,
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   'لا توجد إشعارات',
                   style: TextStyle(
@@ -95,8 +91,8 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
                     letterSpacing: 0.5,
                   ),
                 ),
-                SizedBox(height: 10),
-                Text(
+                const SizedBox(height: 10),
+              const  Text(
                   'سيتم إعلامك عندما تصلك أي إشعارات جديدة',
                   style: TextStyle(
                     fontSize: 14,
@@ -110,12 +106,12 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
         }
 
         return ListView.builder(
-          padding: EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           itemCount: controller.notifications.length,
           itemBuilder: (context, index) {
             final notification = controller.notifications[index];
             return AnimatedContainer(
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: _buildNotificationTile(notification),
             );
@@ -132,14 +128,14 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
       key: Key(notification.id.toString()),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         decoration: BoxDecoration(
           color: Colors.red,
           borderRadius: BorderRadius.circular(15),
         ),
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Icon(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(
           Icons.delete,
           color: Colors.white,
         ),
@@ -148,7 +144,7 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
         controller.deleteNotification(notification.id);
       },
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -158,7 +154,7 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            stops: [0.0, 0.5, 1.0],
+            stops: const [0.0, 0.5, 1.0],
           ),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
@@ -170,14 +166,14 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
               color: baseColor.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 5,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: ListTile(
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: baseColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
@@ -233,9 +229,7 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
         return Colors.blue.shade600;
       case NotificationType.system:
         return Colors.blueGrey.shade600;
-      default:
-        return systemColors.primary;
-    }
+      }
   }
 
   Icon _getNotificationIcon(NotificationType type) {
@@ -248,9 +242,7 @@ class DriverNotificationsPage extends GetView<DriverNotificationsController> {
         return Icon(Icons.message, color: Colors.blue.shade600);
       case NotificationType.system:
         return Icon(Icons.settings, color: Colors.blueGrey.shade600);
-      default:
-        return Icon(Icons.notifications, color: systemColors.primary);
-    }
+      }
   }
 
   String _formatNotificationTime(DateTime timestamp) {

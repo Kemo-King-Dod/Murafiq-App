@@ -86,7 +86,7 @@ class DriverTripHistoryController extends GetxController {
       final response = await sendRequestWithHandler(
         endpoint: '/public/trip-history',
         method: 'GET',
-        loadingMessage: "جاري التحميل",
+        loadingMessage: "جاري التحميل".tr,
       );
 
       if (response != null && response['data'] != null) {
@@ -99,8 +99,8 @@ class DriverTripHistoryController extends GetxController {
     } catch (e) {
       print('Error fetching trip history: $e-$i');
       Get.snackbar(
-        'خطأ',
-        'حدث خطأ أثناء جلب سجل الرحلات',
+        'خطأ'.tr,
+        'حدث خطأ أثناء جلب سجل الرحلات'.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {

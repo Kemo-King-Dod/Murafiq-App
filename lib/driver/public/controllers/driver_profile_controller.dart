@@ -15,9 +15,9 @@ class DriverProfileController extends GetxController {
   final RxString driverName = ''.obs;
   final RxString phoneNumber = ''.obs;
   final Rx<String> createdAt = ''.obs;
-  final RxString vehicleType = 'kia optima'.obs;
-  final RxInt totalTrips = 150.obs;
-  final RxDouble totalEarnings = 322.5.obs;
+  final RxString vehicleType = ''.obs;
+  final RxInt totalTrips = 0.obs;
+  final RxDouble totalEarnings = 0.0.obs;
   final RxString profileImageUrl = ''.obs;
   @override
   onReady() {
@@ -37,6 +37,7 @@ class DriverProfileController extends GetxController {
         final profileData = response['data']['user'];
         driverName.value = profileData['name'] ?? '';
         phoneNumber.value = profileData['phone'] ?? '';
+        vehicleType.value = profileData['carType'] ?? '';
         createdAt.value = DateTime.parse(profileData['createdAt'])
             .toLocal()
             .toString()

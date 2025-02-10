@@ -65,7 +65,7 @@ class _TripsManagementPageState extends State<TripsManagementPage> {
         final matchesCustomerName =
             trip.customer?.name.toLowerCase().contains(query.toLowerCase()) ??
                 false;
-        final matchesTripId = trip.id!.contains(query);
+        final matchesTripId = trip.TripCode!.contains(query);
         return (matchesDriverName || matchesCustomerName || matchesTripId) &&
             (_selectedTab.value == 'ongoing'
                 ? trip.status != TripStatus.completed

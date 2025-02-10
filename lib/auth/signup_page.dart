@@ -25,7 +25,7 @@ class SignupPage extends StatelessWidget {
                 children: [
                   const SizedBox(height: 40),
                   Text(
-                    'إنشاء حساب جديد',
+                    'إنشاء حساب جديد'.tr,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -33,7 +33,7 @@ class SignupPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'أدخل بياناتك لإنشاء حساب جديد',
+                    'أدخل بياناتك لإنشاء حساب جديد'.tr,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -43,7 +43,7 @@ class SignupPage extends StatelessWidget {
                   TextFormField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'الاسم',
+                      labelText: 'الاسم'.tr,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -51,7 +51,7 @@ class SignupPage extends StatelessWidget {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'الرجاء إدخال الاسم';
+                        return 'الاسم لا يجب أن يكون فارغًا'.tr;
                       }
                       return null;
                     },
@@ -61,7 +61,7 @@ class SignupPage extends StatelessWidget {
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: 'البريد الإلكتروني',
+                      labelText: 'البريد الإلكتروني'.tr,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -69,10 +69,10 @@ class SignupPage extends StatelessWidget {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'الرجاء إدخال البريد الإلكتروني';
+                        return 'الرجاء إدخال البريد الإلكتروني'.tr;
                       }
                       if (!GetUtils.isEmail(value)) {
-                        return 'الرجاء إدخال بريد إلكتروني صحيح';
+                        return 'الرجاء إدخال بريد إلكتروني صحيح'.tr;
                       }
                       return null;
                     },
@@ -82,7 +82,7 @@ class SignupPage extends StatelessWidget {
                     controller: passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: 'كلمة المرور',
+                      labelText: 'كلمة المرور'.tr,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -90,10 +90,10 @@ class SignupPage extends StatelessWidget {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'الرجاء إدخال كلمة المرور';
+                        return 'الرجاء إدخال كلمة المرور'.tr;
                       }
                       if (value.length < 6) {
-                        return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                        return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'.tr;
                       }
                       return null;
                     },
@@ -103,7 +103,7 @@ class SignupPage extends StatelessWidget {
                     controller: confirmPasswordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: 'تأكيد كلمة المرور',
+                      labelText: 'تأكيد كلمة المرور'.tr,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -111,10 +111,10 @@ class SignupPage extends StatelessWidget {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'الرجاء تأكيد كلمة المرور';
+                        return 'الرجاء تأكيد كلمة المرور'.tr;
                       }
                       if (value != passwordController.text) {
-                        return 'كلمات المرور غير متطابقة';
+                        return 'كلمات المرور غير متطابقة'.tr;
                       }
                       return null;
                     },
@@ -132,8 +132,8 @@ class SignupPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'إنشاء حساب',
+                    child: Text(
+                      'إنشاء حساب'.tr,
                       style: TextStyle(fontSize: 16),
                     ),
                   ),
@@ -141,12 +141,12 @@ class SignupPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('لديك حساب بالفعل؟'),
+                      Text('لديك حساب بالفعل؟'.tr),
                       TextButton(
                         onPressed: () {
                           Get.to(() => LoginPage());
                         },
-                        child: const Text('تسجيل الدخول'),
+                        child: Text('تسجيل الدخول'.tr),
                       ),
                     ],
                   ),

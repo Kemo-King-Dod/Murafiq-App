@@ -2,7 +2,8 @@ import 'dart:ffi' as ffi;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:murafiq/customer/public/screens/customer_home_page.dart';
+import 'package:murafiq/main.dart';
 import 'package:murafiq/models/driver.dart';
 import 'package:murafiq/models/trip.dart';
 import '../../../core/utils/systemVarible.dart';
@@ -38,15 +39,17 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
         if (controller.currentStatus.value == TripStatus.searching ||
             controller.currentStatus.value == TripStatus.accepted) {
           Get.defaultDialog(
-            title: 'تنبيه',
+            title: 'تنبيه'.tr,
             titleStyle: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.bold,
               color: systemColors.primary,
             ),
-            middleText: "هل تريد الغاء الرحلة",
+            middleText: "هل تريد الغاء الرحلة".tr,
             middleTextStyle: AppTextStyles.bodyMedium,
             confirm: ElevatedButton(
               onPressed: () {
+                controller.socketController.socket.updateDriver(
+                    data: {"func": "tripStatus", "tripId": widget.trip.id});
                 Get.back();
                 controller.cancelTrip();
               },
@@ -58,7 +61,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                 ),
               ),
               child: Text(
-                'حسنا',
+                'حسنا'.tr,
               ),
             ),
             cancel: ElevatedButton(
@@ -67,7 +70,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                 backgroundColor: systemColors.error,
                 foregroundColor: Colors.white,
               ),
-              child: Text('لا'),
+              child: Text('لا'.tr),
             ),
           );
         } else {
@@ -100,21 +103,54 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                 centerTitle: true,
                 titlePadding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                title: Text(
-                  textAlign: TextAlign.center,
-                  'متابعة الرحلة',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 2,
-                        color: Colors.black.withValues(alpha: 0.3),
-                        offset: const Offset(1, 1),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      textAlign: TextAlign.center,
+                      'متابعة الرحلة'.tr,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 2,
+                            color: Colors.black.withValues(alpha: 0.3),
+                            offset: const Offset(1, 1),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(width: 10),
+                    Obx(() => Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: controller
+                                    .socketController.socket.isConnected.value
+                                ? Colors.green.withOpacity(0.2)
+                                : Colors.red.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            controller
+                                    .socketController.socket.isConnecting.value
+                                ? 'جاري الاتصال...'.tr
+                                : controller.socketController.socket.isConnected
+                                        .value
+                                    ? 'متصل'.tr
+                                    : 'غير متصل'.tr,
+                            style: TextStyle(
+                              color: controller
+                                      .socketController.socket.isConnected.value
+                                  ? Colors.green
+                                  : Colors.red,
+                              fontSize: 12,
+                            ),
+                          ),
+                        )),
+                  ],
                 ),
               ),
               leading: Container(),
@@ -162,61 +198,72 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                           // حالة الرحلة
                           Hero(
                             tag: 'trip_status',
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              margin: const EdgeInsets.only(bottom: 25),
-                              padding: EdgeInsets.symmetric(
-                                vertical: cardPadding,
-                                horizontal: cardPadding * 1.2,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    _getStatusColor(
-                                        controller.currentStatus.value),
-                                    _getStatusColor(
-                                            controller.currentStatus.value)
-                                        .withValues(alpha: 0.8),
-                                  ],
-                                  begin: Alignment.topRight,
-                                  end: Alignment.bottomLeft,
+                            child: GestureDetector(
+                              onTap: () {
+                                printer.w("tripId:${trip.id}");
+                                controller.socketController.socket
+                                    .updateUser("tripStatus", data: {
+                                  "func": "tripStatus",
+                                  "tripId": trip.id
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.only(bottom: 25),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: cardPadding,
+                                  horizontal: cardPadding * 1.2,
                                 ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: _getStatusColor(
-                                            controller.currentStatus.value)
-                                        .withValues(alpha: 0.4),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _getStatusIcon(
-                                      controller.currentStatus.value),
-                                  const SizedBox(width: 15),
-                                  Flexible(
-                                    child: Text(
-                                      _getStatusMessage(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      _getStatusColor(
                                           controller.currentStatus.value),
-                                      style: AppTextStyles.bodyLarge.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: fontSize,
+                                      _getStatusColor(
+                                              controller.currentStatus.value)
+                                          .withValues(alpha: 0.8),
+                                    ],
+                                    begin: Alignment.topRight,
+                                    end: Alignment.bottomLeft,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _getStatusColor(
+                                              controller.currentStatus.value)
+                                          .withValues(alpha: 0.4),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _getStatusIcon(
+                                        controller.currentStatus.value),
+                                    const SizedBox(width: 15),
+                                    Flexible(
+                                      child: Text(
+                                        _getStatusMessage(
+                                                controller.currentStatus.value)
+                                            .tr,
+                                        style: AppTextStyles.bodyLarge.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: fontSize,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                           controller.currentStatus.value == TripStatus.cancelled
                               ? InkWell(
                                   onTap: () {
-                                    Get.offAllNamed("/customer-home");
+                                    Get.offAll(CustomerHomePage());
                                   },
                                   child: Container(
                                     child: Row(
@@ -225,7 +272,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                       children: [
                                         Icon(Icons.home),
                                         SizedBox(width: 10),
-                                        Text("الرجوع الى الصفحة الرئيسية"),
+                                        Text("الرجوع الى الصفحة الرئيسية".tr),
                                       ],
                                     ),
                                   ),
@@ -252,10 +299,10 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                               children: [
                                 _buildTripInfoRow(
                                   Icons.person,
-                                  'نوع السائق',
+                                  'نوع السائق'.tr,
                                   trip.driverType == DriverType.male
-                                      ? 'سائق'
-                                      : 'سائقة',
+                                      ? 'سائق'.tr
+                                      : 'سائقة'.tr,
                                   systemColors.primary,
                                 ),
                                 const Padding(
@@ -264,8 +311,9 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                 ),
                                 _buildTripInfoRow(
                                   Icons.route,
-                                  'المسافة',
-                                  '${trip.distance.toStringAsFixed(2)} كم',
+                                  'المسافة'.tr,
+                                  '${trip.distance.toStringAsFixed(2)}' +
+                                      'كم'.tr,
                                   Colors.blue[700]!,
                                 ),
                                 const Padding(
@@ -274,8 +322,9 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                 ),
                                 _buildTripInfoRow(
                                   Icons.attach_money,
-                                  'التكلفة',
-                                  '${trip.price.toStringAsFixed(2)} دينار',
+                                  'التكلفة'.tr,
+                                  '${trip.price.toStringAsFixed(2)}' +
+                                      'دينار'.tr,
                                   Colors.green[600]!,
                                 ),
                               ],
@@ -338,7 +387,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                     ),
                                     const SizedBox(width: 15),
                                     Text(
-                                      'طريقة الدفع',
+                                      'طريقة الدفع'.tr,
                                       style: AppTextStyles.bodyLarge.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black87,
@@ -368,7 +417,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                             ),
                                             const SizedBox(width: 15),
                                             Text(
-                                              'الدفع نقداً',
+                                              'الدفع نقداً'.tr,
                                               style: AppTextStyles.bodyLarge
                                                   .copyWith(
                                                 color: Colors.black87,
@@ -388,7 +437,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                                     BorderRadius.circular(20),
                                               ),
                                               child: Text(
-                                                'مفعل',
+                                                'مفعل'.tr,
                                                 style: AppTextStyles.bodySmall
                                                     .copyWith(
                                                   color: Colors.green[600],
@@ -419,7 +468,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                             ),
                                             const SizedBox(width: 15),
                                             Text(
-                                              'من المحفظة',
+                                              'من المحفظة'.tr,
                                               style: AppTextStyles.bodyLarge
                                                   .copyWith(
                                                 color: Colors.black87,
@@ -439,7 +488,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                                     BorderRadius.circular(20),
                                               ),
                                               child: Text(
-                                                'مفعل',
+                                                'مفعل'.tr,
                                                 style: AppTextStyles.bodySmall
                                                     .copyWith(
                                                   color: Colors.blue[600],
@@ -471,13 +520,13 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                       controller.currentStatus.value ==
                                           TripStatus.accepted) {
                                     Get.defaultDialog(
-                                      title: 'تنبيه',
+                                      title: 'تنبيه'.tr,
                                       titleStyle:
                                           AppTextStyles.bodyLarge.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: systemColors.primary,
                                       ),
-                                      middleText: "هل تريد الغاء الرحلة",
+                                      middleText: "هل تريد الغاء الرحلة".tr,
                                       middleTextStyle: AppTextStyles.bodyMedium,
                                       confirm: ElevatedButton(
                                         onPressed: () {
@@ -493,7 +542,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                           ),
                                         ),
                                         child: Text(
-                                          'حسناً',
+                                          'حسناً'.tr,
                                           style:
                                               AppTextStyles.bodyMedium.copyWith(
                                             color: Colors.white,
@@ -507,7 +556,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                           backgroundColor: systemColors.error,
                                           foregroundColor: Colors.white,
                                         ),
-                                        child: Text('لا'),
+                                        child: Text('لا'.tr),
                                       ),
                                     );
                                   } else {
@@ -528,7 +577,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                                       Colors.red.withValues(alpha: 0.5),
                                 ),
                                 child: Text(
-                                  'إلغاء الرحلة',
+                                  'إلغاء الرحلة'.tr,
                                   style: AppTextStyles.buttonLarge.copyWith(
                                     fontWeight: FontWeight.bold,
                                     fontSize: fontSize,
@@ -639,7 +688,8 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
                 const SizedBox(width: 12),
                 Obx(
                   () => Text(
-                    'رمز الرحلة: ${controller.trip.value!.TripCode ?? 'غير متوفر'}',
+                    'رمز الرحلة:'.tr +
+                        '${controller.trip.value!.TripCode ?? 'غير متوفر'}',
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -662,7 +712,7 @@ class _TripWaitingPageState extends State<TripWaitingPage> {
           const SizedBox(height: 20),
 
           Text(
-            'معلومات السائق',
+            'معلومات السائق'.tr,
             style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.bold,
               color: systemColors.primary,

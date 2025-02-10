@@ -6,6 +6,7 @@ import 'package:murafiq/customer/public/screens/customer_home_page.dart';
 class NoInternetPage extends StatelessWidget {
   const NoInternetPage({Key? key}) : super(key: key);
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

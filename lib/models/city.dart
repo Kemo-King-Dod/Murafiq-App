@@ -17,7 +17,8 @@ class CityAndBoundary {
 
   factory CityAndBoundary.fromJson(Map<String, dynamic> json) {
     return CityAndBoundary(
-      center: LatLng(json['center']['latitude'], json['center']['longitude']),
+      center: LatLng(
+          json['center']['latitude'].toDouble(), json['center']['longitude']),
       Arabicname: json['Arabicname'],
       Englishname: json['Englishname'],
       boundary: json['boundary'].map<LatLng>((point) {
@@ -30,7 +31,7 @@ class CityAndBoundary {
 class CityAndBoundaryController extends GetxController {
   List<Map<String, dynamic>> priceToDifferentCities = [];
   RxList<CityAndBoundary> citiesAndBoundaries = <CityAndBoundary>[].obs;
-  List<String> features=[];
+  List<String> features = [];
   List? tripSelectionImgs;
   // get citiesAndBoundarie => citiesAndBoundaries;
 
@@ -65,23 +66,26 @@ class CityAndBoundaryController extends GetxController {
     }
   }
 
-  double calculatePriceToDiffrentCities(
+  Map calculatePriceToDiffrentCities(
       {required String city, required String cityTo}) {
     double price = 0;
+    double companyFee = 0;
 
     priceToDifferentCities.forEach((cityprice) {
       if (cityprice["cities"].contains(city) &&
           cityprice["cities"].contains(cityTo)) {
         price = cityprice["price"].toDouble();
+        companyFee = cityprice["companyFee"].toDouble();
       }
     });
 
-    return price;
+    return {"price": price, "_companyFee": companyFee};
   }
 
   @override
   void onInit() {
     // TODO: implement onInit
+    fetchCitiesandBoundaries();
     super.onInit();
   }
 }

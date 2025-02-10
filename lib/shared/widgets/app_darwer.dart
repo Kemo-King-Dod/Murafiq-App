@@ -93,7 +93,7 @@ class AppDarwer {
                 children: [
                   _buildDrawerItem(
                     icon: Icons.person_outline,
-                    title: 'الملف الشخصي',
+                    title: 'الملف الشخصي'.tr,
                     iconColor: Colors.blue[700],
                     onTap: () {
                       Get.back();
@@ -102,7 +102,7 @@ class AppDarwer {
                   ),
                   _buildDrawerItem(
                     icon: Icons.history_rounded,
-                    title: 'السجل',
+                    title: 'السجل'.tr,
                     iconColor: Colors.purple[400],
                     onTap: () {
                       Get.back();
@@ -111,7 +111,7 @@ class AppDarwer {
                   ),
                   _buildDrawerItem(
                     icon: Icons.account_balance_wallet_rounded,
-                    title: 'المحفظة',
+                    title: 'المحفظة'.tr,
                     iconColor: Colors.green[600],
                     onTap: () {
                       Get.back();
@@ -122,7 +122,7 @@ class AppDarwer {
                   ),
                   _buildDrawerItem(
                     icon: Icons.notifications_rounded,
-                    title: 'الإشعارات',
+                    title: 'الإشعارات'.tr,
                     iconColor: Colors.orange[600],
                     onTap: () {
                       Get.back();
@@ -133,7 +133,7 @@ class AppDarwer {
                   _buildDrawerItem(
                     icon: FontAwesomeIcons.whatsapp,
                     iconColor: const Color(0xFF25D366),
-                    title: 'المساعدة والدعم',
+                    title: 'المساعدة والدعم'.tr,
                     onTap: () {
                       Get.back();
                       _launchURL('whatsapp');
@@ -142,7 +142,7 @@ class AppDarwer {
                   _buildDrawerItem(
                     icon: FontAwesomeIcons.facebook,
                     iconColor: const Color(0xFF1877F2),
-                    title: 'صفحتنا على فيسبوك',
+                    title: 'صفحتنا على فيسبوك'.tr,
                     onTap: () {
                       _launchURL('facebook');
                       Get.back();
@@ -151,7 +151,7 @@ class AppDarwer {
                   const Divider(height: 40),
                   _buildDrawerItem(
                     icon: Icons.logout_rounded,
-                    title: 'تسجيل الخروج',
+                    title: 'تسجيل الخروج'.tr,
                     iconColor: Colors.red[600],
                     textColor: Colors.red[600],
                     onTap: () {
@@ -204,7 +204,7 @@ class AppDarwer {
       final respons = await sendRequestWithHandler(
         endpoint: '/public/get-whatsapp-url',
         method: 'GET',
-        loadingMessage: "جاري التحميل",
+        loadingMessage: "جاري التحميل".tr,
       );
 
       final urls = respons['data']['whatsappUrl'].toString();
@@ -238,8 +238,8 @@ class AppDarwer {
             );
           } else {
             Get.snackbar(
-              'خطأ',
-              'الرجاء التأكد من تثبيت تطبيق الواتساب',
+              'خطأ'.tr,
+              'الرجاء التأكد من تثبيت تطبيق الواتساب'.tr,
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.red,
               colorText: Colors.white,
@@ -249,8 +249,8 @@ class AppDarwer {
       } catch (e) {
         print("WhatsApp Error: $e");
         Get.snackbar(
-          'خطأ',
-          'حدث خطأ أثناء فتح الواتساب',
+          'خطأ'.tr,
+          'حدث خطأ أثناء فتح الواتساب'.tr,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -260,7 +260,7 @@ class AppDarwer {
       final respons = await sendRequestWithHandler(
         endpoint: '/public/get-facebook-url',
         method: 'GET',
-        loadingMessage: "جاري التحميل",
+        loadingMessage: "جاري التحميل".tr,
       );
 
       try {
@@ -276,8 +276,8 @@ class AppDarwer {
           );
         } else {
           Get.snackbar(
-            'خطأ',
-            'لا يمكن فتح الرابط',
+            'خطأ'.tr,
+            'لا يمكن فتح الرابط'.tr,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red,
             colorText: Colors.white,
@@ -287,7 +287,7 @@ class AppDarwer {
         print("URL Error: $e");
         Get.snackbar(
           'خطأ',
-          'حدث خطأ أثناء فتح الرابط',
+          'حدث خطأ أثناء فتح الرابط'.tr,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,

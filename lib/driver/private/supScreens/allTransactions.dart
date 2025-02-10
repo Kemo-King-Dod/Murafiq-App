@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:icons_plus/icons_plus.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart' as intl;
-import 'package:murafiq/driver/public/controllers/driver_profile_controller.dart';
 import 'package:murafiq/driver/public/controllers/driver_wallet_controller.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/models/transaction.dart';
@@ -226,7 +224,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
                           ],
                         ),
                         child: Text(
-                          isCredit ? 'إيداع' : 'سحب',
+                          isCredit ? 'إيداع'.tr : 'سحب'.tr,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -275,7 +273,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
                 ),
               )
             : Text(
-                'المعاملات',
+                'المعاملات'.tr,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -331,33 +329,51 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(20),
+                    padding: EdgeInsets.all(25),
                     decoration: BoxDecoration(
-                      color: systemColors.primary.withValues(alpha: 0.1),
+                      gradient: LinearGradient(
+                        colors: [
+                          systemColors.primary.withValues(alpha: 0.8),
+                          systemColors.primary.withValues(alpha: 1.0),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: systemColors.primary.withValues(alpha: 0.4),
+                          blurRadius: 15,
+                          spreadRadius: 5,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
                     ),
                     child: Icon(
                       Icons.receipt_long_outlined,
-                      size: 80,
-                      color: systemColors.primary,
+                      size: 90,
+                      color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 24),
+                  SizedBox(height: 30),
                   Text(
                     'لا توجد معاملات',
                     style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 20,
+                      color: Colors.white,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: 12),
                   Text(
-                    'ستظهر هنا جميع معاملاتك المالية',
+                    'جميع معاملاتك المالية ستظهر هنا لسهولة المتابعة والإدارة.',
                     style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
+                      color: Colors.black87,
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),

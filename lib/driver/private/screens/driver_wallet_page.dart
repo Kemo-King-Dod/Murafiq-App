@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:icons_plus/icons_plus.dart';
 import 'package:murafiq/driver/private/supScreens/addBalancePage.dart';
 import 'package:murafiq/driver/private/supScreens/allTransactions.dart';
 import 'package:murafiq/driver/public/controllers/driver_profile_controller.dart';
@@ -34,7 +33,7 @@ class DriverWalletPage extends GetView<DriverWalletController> {
         ),
         backgroundColor: systemColors.primary,
         title: Text(
-          'المحفظة',
+          'المحفظة'.tr,
           style: systemTextStyle.mediumLight,
         ),
         centerTitle: true,
@@ -89,7 +88,7 @@ class DriverWalletPage extends GetView<DriverWalletController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'الرصيد الحالي',
+                  'الرصيد الحالي'.tr,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 18,
@@ -105,7 +104,7 @@ class DriverWalletPage extends GetView<DriverWalletController> {
             ),
             SizedBox(height: 16),
             Text(
-              '${controller.balance.value.toStringAsFixed(2)} د.ل',
+              '${controller.balance.value.toStringAsFixed(2)} ' + 'د.ل'.tr,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 40,
@@ -128,7 +127,7 @@ class DriverWalletPage extends GetView<DriverWalletController> {
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Text(
-              'الإجراءات السريعة',
+              'الإجراءات السريعة'.tr,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -145,21 +144,21 @@ class DriverWalletPage extends GetView<DriverWalletController> {
             children: [
               _buildQuickActionButton(
                 icon: Icons.add_circle_outline,
-                label: 'إضافة رصيد',
+                label: 'إضافة رصيد'.tr,
                 onTap: () => Get.to(() => AddbalancePage()),
                 color: Colors.green,
               ),
               userType == UserType.driver
                   ? _buildQuickActionButton(
                       icon: Icons.arrow_circle_down,
-                      label: 'سحب الأموال',
+                      label: 'سحب الأموال'.tr,
                       onTap: controller.withdrawFunds,
                       color: Colors.blue,
                     )
                   : Container(),
               _buildQuickActionButton(
                 icon: Icons.history,
-                label: 'كل المعاملات',
+                label: 'كل المعاملات'.tr,
                 onTap: () => Get.to(() => AllTransactionsPage()),
                 color: Colors.blueGrey,
               ),
@@ -245,7 +244,7 @@ class DriverWalletPage extends GetView<DriverWalletController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'آخر المعاملات',
+                  'آخر المعاملات'.tr,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -273,7 +272,7 @@ class DriverWalletPage extends GetView<DriverWalletController> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Text(
-                      'عرض الكل',
+                      'عرض الكل'.tr,
                       style: TextStyle(
                         color: systemColors.white,
                         fontWeight: FontWeight.w600,
@@ -397,7 +396,7 @@ class DriverWalletPage extends GetView<DriverWalletController> {
           ),
         ),
         trailing: Text(
-          '${transaction.amount} د.ل',
+          '${transaction.amount} ' + 'د.ل'.tr,
           style: TextStyle(
             color: isCredit ? Colors.green.shade400 : Colors.red.shade400,
             fontWeight: FontWeight.bold,

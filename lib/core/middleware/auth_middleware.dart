@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:murafiq/auth/auth_controller.dart';
 import 'package:murafiq/auth/login_page.dart';
+import 'package:murafiq/core/constant/AppRoutes.dart';
 import 'package:murafiq/customer/public/screens/customer_home_page.dart';
 import 'package:murafiq/driver/public/screens/driver_home_page.dart';
 import 'package:murafiq/main.dart';
@@ -27,9 +28,9 @@ class AuthMiddleware extends GetMiddleware {
 
       // Redirect based on user type
       if (userType == 'customer') {
-        return const RouteSettings(name: '/customer-home');
+        return const RouteSettings(name: Approutes.userHomePage);
       } else if (userType == 'driver') {
-        return const RouteSettings(name: '/driver-home');
+        return const RouteSettings(name: Approutes.driverHomePage);
       }
     }
 

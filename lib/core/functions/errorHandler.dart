@@ -54,6 +54,7 @@ Future<dynamic> sendRequestWithHandler({
   Map<String, dynamic>? body,
   Map<String, dynamic>? queryParameters,
 }) async {
+
   final loadingController = Get.find<LoadingController>();
 
   try {
@@ -69,7 +70,7 @@ Future<dynamic> sendRequestWithHandler({
     );
 
     if (loadingMessage != null) {
-     await loadingController.hideLoading();
+      await loadingController.hideLoading();
     }
 
     if (response != null) {
@@ -79,7 +80,7 @@ Future<dynamic> sendRequestWithHandler({
     }
   } catch (e) {
     if (loadingMessage != null) {
-      loadingController.hideLoading();
+      await loadingController.hideLoading();
     }
 
     // تأخير قصير قبل عرض رسالة الخطأ

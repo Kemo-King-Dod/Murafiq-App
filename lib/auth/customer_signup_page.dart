@@ -51,6 +51,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
   String selectedGender = 'male'; // Default value
   final ResendTimerController _timerController =
       Get.put(ResendTimerController());
+  final AuthController authController = Get.find();
   String? _storedOTP;
 
   void _resetFields() {
@@ -72,7 +73,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                   final response = await sendRequestWithHandler(
                     endpoint: '/auth/verify_phone',
                     method: 'POST',
-                    loadingMessage: "جاري إعادة إرسال رمز التحقق",
+                    loadingMessage: "جاري إعادة إرسال رمز التحقق".tr,
                     body: {
                       "phone": phoneController.text,
                     },
@@ -84,14 +85,14 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     _storedOTP = response["data"]["pin"].toString();
                     _timerController.startTimer();
                     Get.snackbar(
-                      'إعادة إرسال',
-                      'تم إعادة إرسال رمز التأكيد',
+                      'إعادة الإرسال'.tr,
+                      'تم إعادة إرسال رمز التأكيد'.tr,
                       snackPosition: SnackPosition.BOTTOM,
                     );
                   }
                 },
                 child: Text(
-                  'إعادة الإرسال',
+                  'إعادة الإرسال'.tr,
                   style: TextStyle(
                     color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.bold,
@@ -141,7 +142,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                 children: [
                   const SizedBox(height: 40),
                   Text(
-                    'إنشاء حساب زبون',
+                    'إنشاء حساب زبون'.tr,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -150,7 +151,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'أدخل بياناتك لإنشاء حساب جديد',
+                    'أدخل بياناتك لإنشاء حساب جديد'.tr,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -160,7 +161,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                   TextFormField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'الاسم',
+                      labelText: 'الاسم'.tr,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -168,7 +169,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'الرجاء إدخال الاسم';
+                        return 'الرجاء إدخال الاسم'.tr;
                       }
                       return null;
                     },
@@ -178,7 +179,8 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      labelText: 'رقم الجوال',
+                      hintText: '09XXXXXXXX'.tr,
+                      labelText: 'رقم الجوال'.tr,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -186,10 +188,10 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'الرجاء إدخال رقم الجوال';
+                        return 'الرجاء إدخال رقم الجوال'.tr;
                       }
                       if (!GetUtils.isPhoneNumber(value)) {
-                        return 'الرجاء إدخال رقم جوال صحيح';
+                        return 'الرجاء إدخال رقم جوال صحيح'.tr;
                       }
                       return null;
                     },
@@ -198,11 +200,11 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(right: 12.0, bottom: 8.0),
                         child: Text(
-                          'الجنس',
-                          style: TextStyle(
+                          "الجنس".tr,
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
                           ),
@@ -248,7 +250,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'ذكر',
+                                      'ذكر'.tr,
                                       style: TextStyle(
                                         color: selectedGender == 'male'
                                             ? Colors.white
@@ -300,7 +302,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'أنثى',
+                                      'انثى'.tr,
                                       style: TextStyle(
                                         color: selectedGender == 'female'
                                             ? Colors.white
@@ -322,7 +324,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     controller: passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: 'كلمة المرور',
+                      labelText: 'كلمة المرور'.tr,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -330,10 +332,10 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'الرجاء إدخال كلمة المرور';
+                        return 'الرجاء إدخال كلمة المرور'.tr;
                       }
                       if (value.length < 6) {
-                        return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                        return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'.tr;
                       }
                       return null;
                     },
@@ -343,7 +345,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     controller: confirmPasswordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: 'تأكيد كلمة المرور',
+                      labelText: 'تأكيد كلمة المرور'.tr,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -351,230 +353,263 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'الرجاء تأكيد كلمة المرور';
+                        return 'الرجاء تأكيد كلمة المرور'.tr;
                       }
                       if (value != passwordController.text) {
-                        return 'كلمات المرور غير متطابقة';
+                        return 'كلمات المرور غير متطابقة'.tr;
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        if (passwordController.text !=
-                            confirmPasswordController.text) {
-                          Get.snackbar(
-                            'خطأ',
-                            'كلمة المرور غير متطابقة',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: Colors.red,
-                            colorText: Colors.white,
-                          );
-                          return;
-                        }
+                    onPressed: authController.isLoading.value
+                        ? null
+                        : () async {
+                            if (_formKey.currentState!.validate()) {
+                              if (passwordController.text !=
+                                  confirmPasswordController.text) {
+                                Get.snackbar(
+                                  'خطأ'.tr,
+                                  'كلمة المرور غير متطابقة'.tr,
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: Colors.red,
+                                  colorText: Colors.white,
+                                );
+                                return;
+                              }
 
-                        final response = await sendRequestWithHandler(
-                          endpoint: '/auth/verify_phone',
-                          method: 'POST',
-                          loadingMessage: "جاري ارسال رمز التحقق",
-                          body: {
-                            "phone": phoneController.text,
-                          },
-                        );
+                              final response = await sendRequestWithHandler(
+                                endpoint: '/auth/verify_phone',
+                                method: 'POST',
+                                loadingMessage: "جاري ارسال رمز التحقق".tr,
+                                body: {
+                                  "phone": phoneController.text,
+                                },
+                              );
 
-                        print(response.toString());
-                        if (response != null &&
-                            response["data"] != null &&
-                            response["status"] == "success" &&
-                            response["data"]["pin"] != null) {
-                          _storedOTP = response["data"]["pin"].toString();
-                          _timerController.startTimer();
-                          Get.dialog(
-                            PopScope(
-                              child: Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.all(24),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.grey.withValues(alpha: 0.2),
-                                        spreadRadius: 3,
-                                        blurRadius: 7,
-                                        offset: const Offset(0, 3),
+                              if (response != null &&
+                                  response["data"] != null &&
+                                  response["status"] == "success" &&
+                                  response["data"]["pin"] != null) {
+                                _storedOTP = response["data"]["pin"].toString();
+                                _timerController.startTimer();
+                                Get.dialog(
+                                  PopScope(
+                                    canPop: false,
+                                    child: Dialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.phone_android,
-                                        size: 80,
-                                        color: Theme.of(context).primaryColor,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'تأكيد رقم الجوال',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineSmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(24),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey
+                                                  .withValues(alpha: 0.2),
+                                              spreadRadius: 3,
+                                              blurRadius: 7,
+                                              offset: const Offset(0, 3),
                                             ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'أدخل رمز التأكيد المرسل إلى رقم ${phoneController.text}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: Colors.grey[600],
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 24),
-                                      Directionality(
-                                        textDirection: TextDirection.ltr,
-                                        child: OTPTextField(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 2),
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          contentPadding: EdgeInsets.symmetric(
-                                              vertical: 1, horizontal: 1),
-                                          otpFieldStyle: OtpFieldStyle(
-                                            borderColor:
-                                                Theme.of(context).primaryColor,
-                                            enabledBorderColor:
-                                                Colors.grey[300]!,
-                                            focusBorderColor:
-                                                Theme.of(context).primaryColor,
-                                          ),
-                                          fieldStyle: FieldStyle.box,
-                                          length: 6,
-                                          fieldWidth: 35,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textFieldAlignment:
+                                          ],
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment:
                                               MainAxisAlignment.center,
-                                          keyboardType: TextInputType.number,
-                                          onCompleted: (pin) async {
-                                            try {
-                                              if (_storedOTP == pin) {
-                                                final controller =
-                                                    Get.find<AuthController>();
-                                                controller.signup(
-                                                  name: nameController.text,
-                                                  password:
-                                                      passwordController.text,
-                                                  userTypee: 'customer',
-                                                  phone: phoneController.text,
-                                                  gender: selectedGender,
-                                                );
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.phone_android,
+                                              size: 80,
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              'تأكيد رقم الجوال'.tr,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineSmall
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black87,
+                                                  ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'أدخل رمز التأكيد المرسل إلى رقم ${phoneController.text}'
+                                                  .tr,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    color: Colors.grey[600],
+                                                  ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            const SizedBox(height: 24),
+                                            Directionality(
+                                              textDirection: TextDirection.ltr,
+                                              child: OTPTextField(
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal: 2),
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        vertical: 1,
+                                                        horizontal: 1),
+                                                otpFieldStyle: OtpFieldStyle(
+                                                  borderColor: Theme.of(context)
+                                                      .primaryColor,
+                                                  enabledBorderColor:
+                                                      Colors.grey[300]!,
+                                                  focusBorderColor:
+                                                      Theme.of(context)
+                                                          .primaryColor,
+                                                ),
+                                                fieldStyle: FieldStyle.box,
+                                                length: 6,
+                                                fieldWidth: 35,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                textFieldAlignment:
+                                                    MainAxisAlignment.center,
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                onCompleted: (pin) async {
+                                                  try {
+                                                    if (_storedOTP == pin) {
+                                                      final controller =
+                                                          Get.find<
+                                                              AuthController>();
+                                                      controller.signup(
+                                                        name:
+                                                            nameController.text,
+                                                        password:
+                                                            passwordController
+                                                                .text,
+                                                        userTypee: 'customer',
+                                                        phone: phoneController
+                                                            .text,
+                                                        gender: selectedGender,
+                                                      );
 
+                                                      Get.back();
+                                                      Get.snackbar(
+                                                        'ناجح'.tr,
+                                                        'تم إنشاء الحساب بنجاح'
+                                                            .tr,
+                                                        snackPosition:
+                                                            SnackPosition
+                                                                .BOTTOM,
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                        colorText: Colors.white,
+                                                      );
+                                                    } else {
+                                                      Get.snackbar(
+                                                        'خطأ'.tr,
+                                                        'رمز التأكيد غير صحيح'
+                                                            .tr,
+                                                        snackPosition:
+                                                            SnackPosition
+                                                                .BOTTOM,
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        colorText: Colors.white,
+                                                      );
+                                                    }
+                                                  } catch (e) {
+                                                    Get.snackbar(
+                                                      'خطأ'.tr,
+                                                      'حدث خطأ غير متوقع'.tr,
+                                                      snackPosition:
+                                                          SnackPosition.BOTTOM,
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      colorText: Colors.white,
+                                                    );
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                            const SizedBox(height: 24),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'لم تستلم الرمز؟'.tr,
+                                                  style: TextStyle(
+                                                      color: Colors.grey[600]),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                _buildResendButton(),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 16),
+                                            TextButton(
+                                              onPressed: () {
+                                                _timerController.onClose();
+                                                _resetFields();
                                                 Get.back();
-                                                Get.snackbar(
-                                                  'ناجح',
-                                                  'تم إنشاء الحساب بنجاح',
-                                                  snackPosition:
-                                                      SnackPosition.BOTTOM,
-                                                  backgroundColor: Colors.green,
-                                                  colorText: Colors.white,
-                                                );
-                                              } else {
-                                                Get.snackbar(
-                                                  'خطأ',
-                                                  'رمز التأكيد غير صحيح',
-                                                  snackPosition:
-                                                      SnackPosition.BOTTOM,
-                                                  backgroundColor: Colors.red,
-                                                  colorText: Colors.white,
-                                                );
-                                              }
-                                            } catch (e) {
-                                              Get.snackbar(
-                                                'خطأ',
-                                                'حدث خطأ غير متوقع',
-                                                snackPosition:
-                                                    SnackPosition.BOTTOM,
-                                                backgroundColor: Colors.red,
-                                                colorText: Colors.white,
-                                              );
-                                            }
-                                          },
+                                              },
+                                              child: Text(
+                                                'إلغاء'.tr,
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      const SizedBox(height: 24),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'لم تستلم الرمز؟',
-                                            style: TextStyle(
-                                                color: Colors.grey[600]),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          _buildResendButton(),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      TextButton(
-                                        onPressed: () {
-                                          _timerController.onClose();
-                                          _resetFields();
-                                          Get.back();
-                                        },
-                                        child: Text(
-                                          'إلغاء',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                              canPop: false,
-                            ),
-                            barrierDismissible: false,
-                          );
-                        } else {
-                          Get.snackbar(
-                            'خطأ',
-                            'حدث خطأ غير متوقع',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: Colors.red,
-                            colorText: Colors.white,
-                          );
-                        }
-                      }
-                    },
+                                  barrierDismissible: false,
+                                );
+                              } else {
+                                Get.snackbar(
+                                  'خطأ'.tr,
+                                  response?["message"] ??
+                                      'حدث خطأ غير متوقع'.tr,
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: Colors.red,
+                                  colorText: Colors.white,
+                                );
+                              }
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'إنشاء حساب',
+                    child: Text(
+                      'إنشاء حساب'.tr,
                       style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Obx(
+                      () => authController.isLoading.value
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : const SizedBox(),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -583,7 +618,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                       Get.to(() => DriverSignupPage());
                     },
                     child: Text(
-                      "انشاء حساب سائق",
+                      "إنشاء حساب سائق".tr,
                       style: systemTextStyle.smallPrimary,
                     ),
                     style: ElevatedButton.styleFrom(
@@ -601,12 +636,12 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('لديك حساب بالفعل؟'),
+                      Text('لديك حساب بالفعل؟'.tr),
                       TextButton(
                         onPressed: () {
                           Get.to(() => LoginPage());
                         },
-                        child: const Text('تسجيل الدخول'),
+                        child: Text('تسجيل الدخول'.tr),
                       ),
                     ],
                   ),

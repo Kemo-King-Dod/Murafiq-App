@@ -10,6 +10,7 @@ class Localecontroller extends GetxController {
       : Locale(shared!.getString("lang")!);
 
   void chengeLang(String codeLang) async {
+    print("lang" + codeLang);
     systemUtils.setString("lang", codeLang);
 
     Locale _locale = Locale(codeLang);

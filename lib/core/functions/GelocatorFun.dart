@@ -71,20 +71,16 @@ class LocationService {
     }
   }
 
-  static Future<bool> handleLocationPermission() async {
+  static Future<bool> handleLocationPermission({bool isDriver = false}) async {
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      if (Get.isDialogOpen == true) {
-        Get.back();
-      }
-      Get.snackbar(
-        'خطأ',
-        'الرجاء تفعيل خدمة الموقع',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('تنبيه', 'الرجاء تفعيل خدمة الموقع في إعدادات جهازك',
+          snackPosition: SnackPosition.TOP,
+          colorText: Colors.white,
+          backgroundColor: Colors.indigo);
       return false;
     }
 
@@ -92,11 +88,8 @@ class LocationService {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        if (Get.isDialogOpen == true) {
-          Get.back();
-        }
         Get.snackbar(
-          'خطأ',
+          'تنبيه',
           'لم يتم السماح بالوصول إلى الموقع',
           snackPosition: SnackPosition.BOTTOM,
         );
@@ -105,11 +98,8 @@ class LocationService {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      if (Get.isDialogOpen == true) {
-        Get.back();
-      }
       Get.snackbar(
-        'خطأ',
+        'تنبيه',
         'يرجى تفعيل إذن الموقع من إعدادات التطبيق',
         snackPosition: SnackPosition.BOTTOM,
       );

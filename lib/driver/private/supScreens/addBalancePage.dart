@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:icons_plus/icons_plus.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/driver/public/controllers/driver_wallet_controller.dart';
@@ -23,7 +22,7 @@ class _AddbalancePageState extends State<AddbalancePage> {
       // ---- رمز التحقق من الكرت من قاعدة البيانات ---
       final response = await sendRequestWithHandler(
           method: "POST",
-          loadingMessage: "جاري الشحن",
+          loadingMessage: "جاري الشحن".tr,
           endpoint: "/public/charge-wallet",
           body: {"code": _cardCodeController.text});
       print(response.toString());
@@ -31,12 +30,12 @@ class _AddbalancePageState extends State<AddbalancePage> {
 
       if (response != null && response['data'] != null) {
         Get.back();
-        Get.snackbar("تم شحن الرصيد", "${response['data']['amount']}",
+        Get.snackbar("تم شحن الرصيد".tr, "${response['data']['amount']}",
             backgroundColor: systemColors.primary,
             colorText: systemColors.white);
       } else {
         Get.back();
-        Get.snackbar("خطا", response['message'],
+        Get.snackbar("خطا".tr, response['message'],
             backgroundColor: systemColors.primary,
             colorText: systemColors.white);
       }
@@ -63,7 +62,7 @@ class _AddbalancePageState extends State<AddbalancePage> {
           ),
         ),
         title: Text(
-          'إضافة رصيد',
+          'إضافة رصيد'.tr,
           style: systemTextStyle.mediumLight,
         ),
         backgroundColor: systemColors.primary,
@@ -86,7 +85,7 @@ class _AddbalancePageState extends State<AddbalancePage> {
               ),
               SizedBox(height: 30),
               Text(
-                " رمز البطاقة",
+                "رمز البطاقة".tr,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -109,7 +108,7 @@ class _AddbalancePageState extends State<AddbalancePage> {
                   textAlignVertical: TextAlignVertical.bottom,
                   decoration: InputDecoration(
                     label: Text(
-                      'رمز البطاقة',
+                      'رمز البطاقة'.tr,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -132,11 +131,11 @@ class _AddbalancePageState extends State<AddbalancePage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'الرجاء إدخال رمز البطاقة';
+                      return 'الرجاء إدخال رمز البطاقة'.tr;
                     }
                     // Add more specific validation if needed
                     if (value.length < 10) {
-                      return 'رمز البطاقة غير صحيح';
+                      return 'رمز البطاقة غير صحيح'.tr;
                     }
                     return null;
                   },
@@ -154,7 +153,7 @@ class _AddbalancePageState extends State<AddbalancePage> {
                   elevation: 5,
                 ),
                 child: Text(
-                  'تأكيد رمز البطاقة',
+                  'تأكيد رمز البطاقة'.tr,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

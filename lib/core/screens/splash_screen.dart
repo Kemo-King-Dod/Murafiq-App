@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:murafiq/auth/OnboardingPage.dart';
+import 'package:murafiq/core/constant/AppRoutes.dart';
+import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
+import 'package:murafiq/core/version/version.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -54,10 +59,9 @@ class _SplashScreenState extends State<SplashScreen>
     // Start the animation
     _controller.forward();
 
+    getUpdate();
+
     // Navigate to the next screen after animation
-    Future.delayed(const Duration(milliseconds: 3500), () {
-      Get.offAllNamed('/start');
-    });
   }
 
   @override
@@ -140,5 +144,87 @@ class _SplashScreenState extends State<SplashScreen>
         ),
       ),
     );
+  }
+
+  Future<void> getUpdate() async {
+    final response = await sendRequestWithHandler(
+      endpoint: '/public/update',
+      method: 'GET',
+    );
+    if (response != null &&
+        response["status"] == "success" &&
+        response['version'] != Version.version) {
+      Get.dialog(
+          barrierDismissible: false,
+          PopScope(
+              canPop: false,
+              child: AlertDialog(
+                  backgroundColor: systemColors.white,
+                  content: Container(
+                    color: systemColors.white,
+                    height: 250,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "هناك تحديث جديد الرجاء التحميل".tr,
+                          style: systemTextStyle.mediumDark,
+                        ),
+                        Icon(
+                          Icons.download,
+                          color: systemColors.primary,
+                          size: 50,
+                        ),
+                        TextButton(
+                            onPressed: () => _launchURL(response["url"]),
+                            child: Text(
+                              "تحميل".tr,
+                              style: systemTextStyle.mediumPrimary,
+                            ))
+                      ],
+                    ),
+                  ))));
+    } else if (response != null &&
+        response["status"] == "success" &&
+        response['version'] == Version.version) {
+      Future.delayed(const Duration(milliseconds: 2000), () {
+        Get.offAllNamed(Approutes.onboardingPage);
+      });
+    } else {
+      Get.dialog(
+          barrierDismissible: false,
+          PopScope(
+              canPop: false,
+              child: AlertDialog(
+                  backgroundColor: systemColors.white,
+                  content: Container(
+                    color: systemColors.white,
+                    height: 250,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "حدث خطأ الرجاء فحص  اتصالك بالانترنت".tr,
+                          style: systemTextStyle.mediumDark,
+                        ),
+                      ],
+                    ),
+                  ))));
+    }
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar(
+        'خطأ',
+        'لا يمكن فتح الرابط',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 }

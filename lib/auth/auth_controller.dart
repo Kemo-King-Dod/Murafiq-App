@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:murafiq/admin/screens/admin_dashboard.dart';
 import 'package:murafiq/core/constant/Constatnt.dart';
+import 'package:murafiq/core/controllers/socket_controller.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/services/notification_service.dart';
 import 'package:murafiq/main.dart';
@@ -59,12 +60,14 @@ class AuthController extends GetxController {
 
   Future<void> _handleSuccessfulLogin(Map<String, dynamic> response) async {
     try {
+      print("response handler" + response.toString());
       // Store user data
       userType.value = response['data']['user']['type'];
       shared!.setString("user_type", userType.value);
       shared!.setString("user_phone", response['data']['user']['phone']);
       shared!.setString("user_id", response['data']['user']['id'].toString());
       shared!.setString("user_name", response['data']['user']['name']);
+      shared!.setString("user_gender", response["data"]["user"]['gender']);
 
       // Store token
       if (response['token'] != null) {
@@ -86,18 +89,19 @@ class AuthController extends GetxController {
     switch (userType.value) {
       case 'customer':
         FirebaseMessaging.instance.subscribeToTopic('customers');
-        Get.offAllNamed('/customer-home');
+        Get.offAll(() => const CustomerHomePage());
         break;
       case 'driver':
         FirebaseMessaging.instance.subscribeToTopic('drivers');
-        Get.offAllNamed('/driver-home');
+        Get.offAll(() => DriverHomePage(),
+            binding: BindingsBuilder(() => Get.put(SocketController())));
         break;
       case 'admin':
         FirebaseMessaging.instance.subscribeToTopic('admins');
-        Get.offAllNamed('/admin-dashboard');
+        Get.offAll(() => const AdminDashboardPage());
         break;
       default:
-        Get.offAllNamed('/login');
+        Get.offAll(() => LoginPage());
     }
   }
 
@@ -136,10 +140,18 @@ class AuthController extends GetxController {
     required String gender,
     String? licenseNumber,
     String? carNumber,
+    String? carType,
     String? identityType,
     File? identityImage,
   }) async {
     try {
+      isLoading.value = true;
+      String? fcm_token = shared!.getString("fcm_token");
+      if (fcm_token == null) {
+        // Get new FCM token if not available
+        final notificationService = Get.find<NotificationService>();
+        fcm_token = await notificationService.getAndSaveFCMToken();
+      }
       // Prepare request body based on user type
       final Map<String, dynamic> body = {
         'name': name,
@@ -147,7 +159,7 @@ class AuthController extends GetxController {
         'phone': phone,
         'type': userTypee,
         'gender': gender,
-        'fcmToken': shared!.getString("fcm_token"),
+        'fcmToken': fcm_token,
       };
 
       // Add driver-specific fields if user is a driver
@@ -155,6 +167,7 @@ class AuthController extends GetxController {
         body['licenseNumber'] = licenseNumber;
         body['carNumber'] = carNumber;
         body['identityType'] = 'driver_license'; // Always use driver's license
+        body["carType"] = carType;
       }
 
       // Prepare the request
@@ -204,23 +217,17 @@ class AuthController extends GetxController {
 
         // Check response status
         if (responseBody['status'] == 'success') {
-          // Store user type and data
-          userType.value = responseBody['data']['user']['type'];
-          isLoggedIn.value = true;
-
           // Store token
           if (responseBody['token'] != null) {
             final token = responseBody['token'];
             shared!.setString("token", token);
+          } else {
+            throw Exception(
+                responseBody['message'] ?? 'حدث خطأ في عملية التسجيل');
           }
-
+          isLoading.value = false;
           // Navigate based on user type
-          if (userType.value == 'customer') {
-            Get.offAll(() => const CustomerHomePage());
-          } else if (userType.value == 'driver') {
-            // TODO: Navigate to driver home page
-            Get.offAll(() => DriverHomePage());
-          }
+          _handleSuccessfulLogin(responseBody);
         } else {
           throw Exception(
               responseBody['message'] ?? 'حدث خطأ في عملية التسجيل');
@@ -237,22 +244,8 @@ class AuthController extends GetxController {
           // Check response status
           if (response['status'] == 'success') {
             // Store user type and data
-            userType.value = response['data']['user']['type'];
-            isLoggedIn.value = true;
 
-            // Store token
-            if (response['token'] != null) {
-              final token = response['token'];
-              shared!.setString("token", token);
-            }
-
-            // Navigate based on user type
-            if (userType.value == 'customer') {
-              Get.offAll(() => const CustomerHomePage());
-            } else if (userType.value == 'driver') {
-              // TODO: Navigate to driver home page
-              Get.offAll(() => DriverHomePage());
-            }
+            _handleSuccessfulLogin(response);
           } else {
             throw Exception(response['message'] ?? 'حدث خطأ في عملية التسجيل');
           }

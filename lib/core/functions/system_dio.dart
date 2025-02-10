@@ -67,6 +67,7 @@ class ApiService {
         response = await _dio.get(endpoint,
             queryParameters: queryParameters, options: options);
       }
+      printer.w("response: ${response.toString()}");
 
       // التحقق من حالة الطلب
       if (response.statusCode == 200 ||

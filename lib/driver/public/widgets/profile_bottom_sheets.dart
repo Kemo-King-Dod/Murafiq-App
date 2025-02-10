@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/driver/public/controllers/driver_profile_controller.dart';
+import 'package:murafiq/main.dart';
 
 class EditProfileBottomSheet extends StatelessWidget {
   final UserType userType;
@@ -97,6 +98,7 @@ class EditProfileBottomSheet extends StatelessWidget {
                   if (response != null &&
                       response['status'] == 'success' &&
                       response['data'] != null) {
+                    shared!.setString("user_name", _nameController.text);
                     Get.back();
                     Get.snackbar(
                       'نجاح',

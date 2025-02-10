@@ -53,32 +53,7 @@ class NotificationModel {
 }
 
 class DriverNotificationsController extends GetxController {
-  final RxList<NotificationModel> notifications = <NotificationModel>[
-    NotificationModel(
-        id: 1,
-        title: "تنبيه",
-        body: "مرحبا بك في التطبيق",
-        type: NotificationType.message,
-        timestamp: DateTime.now()),
-    NotificationModel(
-        id: 15,
-        title: "تنبيه",
-        body: "مرحبا بك في التطبيق",
-        type: NotificationType.payment,
-        timestamp: DateTime.now()),
-    NotificationModel(
-        id: 1,
-        title: "تنبيه",
-        body: "مرحبا بك في التطبيق",
-        type: NotificationType.system,
-        timestamp: DateTime.now()),
-    NotificationModel(
-        id: 1,
-        title: "تنبيه",
-        body: "مرحبا بك في التطبيق",
-        type: NotificationType.trip,
-        timestamp: DateTime.now())
-  ].obs;
+  final RxList<NotificationModel> notifications = <NotificationModel>[].obs;
   final RxBool isLoading = true.obs;
 
   @override
