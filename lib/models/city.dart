@@ -18,7 +18,7 @@ class CityAndBoundary {
   factory CityAndBoundary.fromJson(Map<String, dynamic> json) {
     return CityAndBoundary(
       center: LatLng(
-          json['center']['latitude'].toDouble(), json['center']['longitude']),
+          json['center']['latitude'].toDouble(), json['center']['longitude'] ),
       Arabicname: json['Arabicname'],
       Englishname: json['Englishname'],
       boundary: json['boundary'].map<LatLng>((point) {

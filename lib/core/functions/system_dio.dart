@@ -51,9 +51,11 @@ class ApiService {
     try {
       Response response;
       final token = shared!.getString('token');
+      final fcmToken = shared!.getString('fcm_token');
       Options options = Options(headers: {
         "Content-type": "application/json",
         "Authorization": "Bearer $token",
+        "fcmToken": fcmToken,
       });
 
       // تحديد نوع الطلب

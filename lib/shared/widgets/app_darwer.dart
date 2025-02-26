@@ -15,155 +15,143 @@ import 'package:url_launcher/url_launcher.dart';
 class AppDarwer {
   static Widget buildDrawer({UserType? userType}) {
     final AuthController authController = Get.find<AuthController>();
+    // Cache the values to avoid multiple shared preference reads
+    final userName = shared!.getString("user_name") ?? "";
+    final userPhone = shared!.getString("user_phone") ?? "";
+
     return Drawer(
       backgroundColor: systemColors.white,
       elevation: 0,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30),
-            bottomLeft: Radius.circular(30),
-          ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-              decoration: BoxDecoration(
-                color: systemColors.primary,
-                borderRadius: const BorderRadius.only(
-                  bottomRight: Radius.circular(50),
-                ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            decoration: BoxDecoration(
+              color: systemColors.primary,
+              borderRadius: const BorderRadius.only(
+                bottomRight: Radius.circular(50),
               ),
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const CircleAvatar(
+                      radius: 35,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person, size: 40, color: Colors.blue),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
+                        Text(
+                          userName,
+                          style: const TextStyle(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(40),
-                          ),
-                          child: const CircleAvatar(
-                            radius: 35,
-                            backgroundColor: Colors.white,
-                            child: Icon(Icons.person,
-                                size: 40, color: Colors.blue),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 15),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                shared!.getString("user_name").toString(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                shared!.getString("user_phone").toString(),
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
+                        const SizedBox(height: 5),
+                        Text(
+                          userPhone,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 14,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                children: [
-                  _buildDrawerItem(
-                    icon: Icons.person_outline,
-                    title: 'الملف الشخصي'.tr,
-                    iconColor: Colors.blue[700],
-                    onTap: () {
-                      Get.back();
-                      Get.to(() => DriverProfilePage(userType: userType));
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.history_rounded,
-                    title: 'السجل'.tr,
-                    iconColor: Colors.purple[400],
-                    onTap: () {
-                      Get.back();
-                      Get.to(() => DriverTripHistoryPage(userType: userType!));
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.account_balance_wallet_rounded,
-                    title: 'المحفظة'.tr,
-                    iconColor: Colors.green[600],
-                    onTap: () {
-                      Get.back();
-                      Get.to(() => DriverWalletPage(
-                            userType: userType!,
-                          ));
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.notifications_rounded,
-                    title: 'الإشعارات'.tr,
-                    iconColor: Colors.orange[600],
-                    onTap: () {
-                      Get.back();
-                      Get.to(() => DriverNotificationsPage());
-                    },
-                  ),
-                  const Divider(height: 40),
-                  _buildDrawerItem(
-                    icon: FontAwesomeIcons.whatsapp,
-                    iconColor: const Color(0xFF25D366),
-                    title: 'المساعدة والدعم'.tr,
-                    onTap: () {
-                      Get.back();
-                      _launchURL('whatsapp');
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: FontAwesomeIcons.facebook,
-                    iconColor: const Color(0xFF1877F2),
-                    title: 'صفحتنا على فيسبوك'.tr,
-                    onTap: () {
-                      _launchURL('facebook');
-                      Get.back();
-                    },
-                  ),
-                  const Divider(height: 40),
-                  _buildDrawerItem(
-                    icon: Icons.logout_rounded,
-                    title: 'تسجيل الخروج'.tr,
-                    iconColor: Colors.red[600],
-                    textColor: Colors.red[600],
-                    onTap: () {
-                      Get.back();
-                      authController.logout();
-                    },
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.person_outline,
+                  title: 'الملف الشخصي'.tr,
+                  iconColor: Colors.blue[700],
+                  onTap: () {
+                    Get.back();
+                    Get.to(() => DriverProfilePage(userType: userType));
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.history_rounded,
+                  title: 'السجل'.tr,
+                  iconColor: Colors.purple[400],
+                  onTap: () {
+                    Get.back();
+                    Get.to(() => DriverTripHistoryPage(userType: userType!));
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.account_balance_wallet_rounded,
+                  title: 'المحفظة'.tr,
+                  iconColor: Colors.green[600],
+                  onTap: () {
+                    Get.back();
+                    Get.to(() => DriverWalletPage(
+                          userType: userType!,
+                        ));
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.notifications_rounded,
+                  title: 'الإشعارات'.tr,
+                  iconColor: Colors.orange[600],
+                  onTap: () {
+                    Get.back();
+                    Get.to(() => DriverNotificationsPage());
+                  },
+                ),
+                const Divider(height: 40),
+                _buildDrawerItem(
+                  icon: FontAwesomeIcons.whatsapp,
+                  iconColor: const Color(0xFF25D366),
+                  title: 'المساعدة والدعم'.tr,
+                  onTap: () {
+                    Get.back();
+                    _launchURL('whatsapp');
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: FontAwesomeIcons.facebook,
+                  iconColor: const Color(0xFF1877F2),
+                  title: 'صفحتنا على فيسبوك'.tr,
+                  onTap: () {
+                    _launchURL('facebook');
+                    Get.back();
+                  },
+                ),
+                const Divider(height: 40),
+                _buildDrawerItem(
+                  icon: Icons.logout_rounded,
+                  title: 'تسجيل الخروج'.tr,
+                  iconColor: Colors.red[600],
+                  textColor: Colors.red[600],
+                  onTap: () {
+                    Get.back();
+                    authController.logout();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -179,7 +167,7 @@ class AppDarwer {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: (iconColor ?? Colors.grey[600])!.withValues(alpha: 0.1),
+          color: (iconColor ?? Colors.grey[600])!.withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
@@ -210,7 +198,6 @@ class AppDarwer {
       final urls = respons['data']['whatsappUrl'].toString();
       final urls2 = respons['data']['whatsappUrl2'].toString();
 
-      const phoneNumber = '0927775066';
       try {
         // تجربة فتح الواتساب مباشرة
         var url = Uri.parse(urls);

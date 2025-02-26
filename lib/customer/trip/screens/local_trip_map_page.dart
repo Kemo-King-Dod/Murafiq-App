@@ -86,46 +86,49 @@ class LocalTripMapPage extends GetView<LocalTripMapController> {
                 child: SizedBox(
                   width: Get.width,
                   height: Get.height,
-                  child: Obx(() => GoogleMap(
-                        zoomControlsEnabled: false,
-                        rotateGesturesEnabled: false,
-                        layoutDirection: TextDirection.rtl,
-                        compassEnabled: false,
-                        initialCameraPosition: CameraPosition(
-                          target: controller.cityTo == controller.city
-                              ? controller.currentPosition
-                              : controller.calculateCenterPoint(
-                                  controller.currentPosition,
-                                  controller.selectedDestination!),
-                          zoom: controller.cityTo == controller.city ? 15 : 8,
-                        ),
-                        mapType: controller.isSatelliteView
-                            ? MapType.satellite
-                            : MapType.normal,
-                        markers: controller.markers,
-                        polylines: controller.polylines,
-                        onTap: controller.cityTo == controller.city &&
-                                !controller.isThereTrip.value
-                            ? controller.onMapTap
-                            : null,
-                        myLocationButtonEnabled: false,
-                        polygons: controller.Boundries,
-                        onMapCreated: (mapController) {
-                          controller.mapController = mapController;
+                  child: Obx(
+                    () => GoogleMap(
+                      zoomControlsEnabled: false,
+                      rotateGesturesEnabled: false,
+                      layoutDirection: TextDirection.rtl,
+                      compassEnabled: false,
+                      initialCameraPosition: CameraPosition(
+                        target: controller.cityTo == controller.city
+                            ? controller.currentPosition
+                            : controller.calculateCenterPoint(
+                                controller.currentPosition,
+                                controller.selectedDestination ?? LatLng(0, 0)),
+                        zoom: controller.cityTo == controller.city ? 15 : 8,
+                      ),
+                      mapType: controller.isSatelliteView
+                          ? MapType.satellite
+                          : MapType.normal,
+                      markers: controller.markers,
+                      polylines: controller.polylines,
+                      onTap: controller.cityTo == controller.city &&
+                              !controller.isThereTrip.value
+                          ? controller.onMapTap
+                          : null,
+                      myLocationButtonEnabled: false,
+                      polygons: controller.Boundries,
+                      onMapCreated: (mapController) {
+                        controller.mapController = mapController;
 
-                          // If inter-city trip, fit markers in view
-                          if (controller.cityTo != controller.city) {
-                            mapController.animateCamera(
-                              CameraUpdate.newLatLngBounds(
-                                controller.calculateLatLngBounds(
-                                    controller.currentPosition,
-                                    controller.selectedDestination!),
-                                100,
-                              ),
-                            );
-                          }
-                        },
-                      )),
+                        // If inter-city trip, fit markers in view
+                        if (controller.cityTo != controller.city) {
+                          mapController.animateCamera(
+                            CameraUpdate.newLatLngBounds(
+                              controller.calculateLatLngBounds(
+                                  controller.currentPosition,
+                                  controller.selectedDestination ??
+                                      LatLng(0, 0)),
+                              100,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
                 ),
               )),
 

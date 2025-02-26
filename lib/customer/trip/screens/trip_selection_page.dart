@@ -131,7 +131,7 @@ class _TripSelectionPageState extends State<TripSelectionPage> {
             cityTo:
                 cityTo != null && cityTo.Arabicname != currentCity!.Arabicname
                     ? cityTo
-                    : currentCity!,
+                    : currentCity,
           ),
         );
       }

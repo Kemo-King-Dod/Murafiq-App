@@ -124,14 +124,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   }
 
   Future<void> checkTrip() async {
-    print("checkTrip");
     if (shared!.getBool("has_active_trip") == true) {
       try {
         final response = await sendRequestWithHandler(
           endpoint: '/trips/status',
           method: 'GET',
         );
-        print("customer home page 41" + response.toString());
         if (response != null && response["version"] != Version.version) {
           Get.snackbar(
               "لديك رحلة غير مكتملة".tr, "الرجاء تحديث التطبيق في اسرع وقت".tr,
@@ -144,14 +142,15 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           if (updatedTrip.status == TripStatus.accepted ||
               updatedTrip.status == TripStatus.driverFound ||
               updatedTrip.status == TripStatus.completed ||
-              updatedTrip.status == TripStatus.searching) {
+              updatedTrip.status == TripStatus.searching||
+              updatedTrip.status == TripStatus.arrived||
+              updatedTrip.status == TripStatus.cancelled
+              ) {
             if (updatedTrip.status == TripStatus.completed ||
                 updatedTrip.status == TripStatus.cancelled) {
               shared!.setBool("has_active_trip", false);
-              Get.offAll(CustomerHomePage());
+              Get.offAll(() => CustomerHomePage());
             } else {
-              shared!.setBool("has_active_trip", false);
-
               var city = CityAndBoundary.fromJson(response["data"]["city"]);
               var cityTo = CityAndBoundary.fromJson(response["data"]["cityTo"]);
 
@@ -163,7 +162,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   ));
             }
           } else {
-            print(1);
             checkInternetAndProceed();
           }
         } else {
@@ -176,7 +174,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   }
 
   Future<void> checkInternetAndProceed() async {
-    print("checkInternetAndProceed");
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       // التوجيه لصفحة عدم الاتصال بالإنترنت
@@ -185,37 +182,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     } else {
       checkTrip();
     }
-  }
-
-  Widget _buildDrawerItem({
-    required IconData icon,
-    required String title,
-    Color? iconColor,
-    Color? textColor,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: (iconColor ?? Colors.grey[600])!.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color: iconColor ?? Colors.grey[600],
-          size: 22,
-        ),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: textColor ?? Colors.black87,
-          fontSize: 16,
-        ),
-      ),
-      onTap: onTap,
-    );
   }
 
   @override
@@ -230,20 +196,34 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         elevation: 0,
         leadingWidth: 100,
         leading: Builder(
-          builder: (context) => IconButton(
-            icon: Container(
-              padding: EdgeInsets.all(5),
+          builder: (context) => GestureDetector(
+            onTap: () {
+              Scaffold.of(context).openDrawer();
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
               decoration: BoxDecoration(
-                color: systemColors.primaryGoust,
+                gradient: LinearGradient(colors: [
+                  systemColors.primary,
+                  systemColors.primary,
+                  systemColors.primary.withValues(alpha: 0.85),
+                ], begin: Alignment.bottomCenter, end: Alignment.topRight),
                 borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: systemColors.primary.withValues(alpha: 0.1),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.menu,
-                color: systemColors.primary,
+                color: systemColors.white,
                 size: 28,
               ),
             ),
-            onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
         title: Container(
@@ -321,8 +301,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: systemColors.primaryGoust,
+                      color: systemColors.white,
                       borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: systemColors.primary.withValues(alpha: 0.1),
+                          spreadRadius: 1,
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
                     child: Icon(
                       Icons.local_taxi_rounded,

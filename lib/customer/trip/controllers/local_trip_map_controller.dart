@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -15,6 +16,7 @@ import 'package:murafiq/main.dart';
 import 'package:murafiq/models/city.dart';
 import 'package:murafiq/models/trip.dart';
 import '../../../core/utils/systemVarible.dart';
+import "package:http/http.dart" as http;
 
 class LocalTripMapController extends GetxController {
   // Constructor with required initial parameters
@@ -29,6 +31,10 @@ class LocalTripMapController extends GetxController {
 
   final cityAndBoundaryController = Get.find<CityAndBoundaryController>();
   final Trip? lasttrip;
+  static const String _cacheKeyPrefix = 'dir_cache_';
+  static const int _cacheValidityHours = 24;
+  RxString time = "".obs;
+  RxString distenance = "".obs;
   // Initial position and city details
   final LatLng initialPosition;
   final CityAndBoundary city;
@@ -37,7 +43,7 @@ class LocalTripMapController extends GetxController {
 
   // Reactive map-related variables
   final Rx<LatLng> _currentPosition = Rx<LatLng>(const LatLng(0, 0));
-  late final Rx<LatLng?> _selectedDestination;
+  Rx<LatLng?> _selectedDestination = Rx<LatLng?>(LatLng(0, 0));
   final RxDouble _tripDistance = 0.0.obs;
   final RxDouble _companyFee = 0.0.obs;
   final RxDouble _tripPrice = 0.0.obs;
@@ -121,9 +127,12 @@ class LocalTripMapController extends GetxController {
 
     // Calculate trip price
     _calculateTripPrice();
-
     // If there's an active trip, fit the map to show both points
     if (lasttrip != null) {
+      setupMarkersAndDirections(
+          storePos: lasttrip!.startLocation!,
+          customerPos: lasttrip!.destinationLocation!);
+
       Future.delayed(const Duration(milliseconds: 500), () {
         mapController?.animateCamera(
           CameraUpdate.newLatLngZoom(
@@ -453,6 +462,9 @@ class LocalTripMapController extends GetxController {
                 Trip.fromJson(response["data"]["trip"]);
             waittingTrip = tripFromResponse;
             isThereTrip.value = true;
+            setupMarkersAndDirections(
+                storePos: _currentPosition.value,
+                customerPos: _selectedDestination.value!);
             // Get.to(() => TripWaitingPage(trip: tripFromResponse));
           } else if (response["status"] == "fail" &&
               response["message"] != null &&
@@ -593,6 +605,152 @@ class LocalTripMapController extends GetxController {
       isReady.value = false;
       return false;
     }
+  }
+
+  Future<void> setupMarkersAndDirections({
+    required LatLng storePos,
+    required LatLng customerPos,
+  }) async {
+    printer.w("setupMarkersAndDirections");
+    // تنظيف البيانات القديمة
+    markers.clear();
+    polylines.clear();
+
+    // إضافة العلامات الأساسية
+    markers.addAll([
+      Marker(
+        markerId: const MarkerId("store_marker"),
+        position: storePos,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+      ),
+      Marker(
+        markerId: const MarkerId("customer_marker"),
+        position: customerPos,
+        icon:
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta),
+      )
+    ]);
+
+    // جلب بيانات الاتجاهات
+    final dirData = await _getCachedDirections(storePos, customerPos);
+    if (dirData == null) return;
+    printer.f("dirData: " + dirData.toString());
+    time.value = dirData['duration'];
+    distenance.value = dirData['distance'];
+    // إضافة الخطوط
+    polylines.add(Polyline(
+      polylineId: const PolylineId('main_route'),
+      color: AppColors.primary,
+      width: 3,
+      points: dirData['points'] as List<LatLng>,
+      geodesic: true,
+    ));
+    update(['map']);
+    printer.w("setupMarkersAndDirections done");
+  }
+
+  Future<Map<String, dynamic>?> _getCachedDirections(
+      LatLng start, LatLng end) async {
+    final cacheKey =
+        '${_cacheKeyPrefix}${start.latitude},${start.longitude}_${end.latitude},${end.longitude}';
+
+    // التحقق من وجود بيانات حديثة
+    if (shared!.containsKey(cacheKey)) {
+      final cached = json.decode(shared!.getString(cacheKey)!);
+      final timestamp = DateTime.parse(cached['timestamp']);
+
+      if (DateTime.now().difference(timestamp).inHours < _cacheValidityHours) {
+        return {
+          'distance': cached['distance'],
+          'duration': cached['duration'],
+          'points': (cached['points'] as List)
+              .map((e) => LatLng(e[0], e[1]))
+              .toList(),
+        };
+      }
+    }
+
+    // جلب بيانات جديدة من API
+    final freshData = await _fetchDirectionsFromAPI(start, end);
+    if (freshData == null) return null;
+
+    // تخزين البيانات الجديدة
+    await shared!.setString(
+        cacheKey,
+        json.encode({
+          ...freshData,
+          'timestamp': DateTime.now().toIso8601String(),
+          'points': freshData['points']!
+              .map((p) => [p.latitude, p.longitude])
+              .toList(),
+        }));
+
+    return freshData;
+  }
+
+  Future<Map<String, dynamic>?> _fetchDirectionsFromAPI(
+      LatLng start, LatLng end) async {
+    const apiKey = 'AIzaSyAg6MAVrLL6fLpmc-ZVXIUtMuGTX0lD0dg';
+    final url =
+        Uri.parse('https://maps.googleapis.com/maps/api/directions/json?'
+            'origin=${start.latitude},${start.longitude}'
+            '&destination=${end.latitude},${end.longitude}'
+            '&mode=driving'
+            '&alternatives=false'
+            '&key=$apiKey');
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200) return null;
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      if (data['status'] != 'OK') return null;
+
+      final route = data['routes'][0] as Map<String, dynamic>;
+      final leg = route['legs'][0] as Map<String, dynamic>;
+
+      return {
+        'distance': leg['distance']['text'],
+        'duration': leg['duration']['text'],
+        'points':
+            _decodePolyline(route['overview_polyline']['points'] as String),
+      };
+    } catch (e) {
+      print('Error fetching directions: $e');
+      return null;
+    }
+  }
+
+  List<LatLng> _decodePolyline(String encoded) {
+    final List<LatLng> points = [];
+    int index = 0, len = encoded.length;
+    int lat = 0, lng = 0;
+
+    while (index < len) {
+      int b, shift = 0, result = 0;
+
+      // فك تشفير خط العرض
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      lat += (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+
+      // فك تشفير خط الطول
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      lng += (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+
+      points.add(LatLng(lat / 1E5, lng / 1E5));
+    }
+
+    return points;
   }
 
   // Getters for reactive variables
