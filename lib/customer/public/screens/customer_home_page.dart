@@ -142,10 +142,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           if (updatedTrip.status == TripStatus.accepted ||
               updatedTrip.status == TripStatus.driverFound ||
               updatedTrip.status == TripStatus.completed ||
-              updatedTrip.status == TripStatus.searching||
-              updatedTrip.status == TripStatus.arrived||
-              updatedTrip.status == TripStatus.cancelled
-              ) {
+              updatedTrip.status == TripStatus.searching ||
+              updatedTrip.status == TripStatus.arrived ||
+              updatedTrip.status == TripStatus.cancelled) {
             if (updatedTrip.status == TripStatus.completed ||
                 updatedTrip.status == TripStatus.cancelled) {
               shared!.setBool("has_active_trip", false);
@@ -290,204 +289,263 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 25),
-            // Logo
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: systemColors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: systemColors.primary.withValues(alpha: 0.1),
-                          spreadRadius: 1,
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.local_taxi_rounded,
-                      color: systemColors.primary,
-                      size: 30,
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  Text(
-                    "مُرافق".tr,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: systemColors.primary,
-                      fontFamily: 'Tajawal',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // Advertisements Carousel
-            Obx(
-              () => CarouselSlider(
-                options: CarouselOptions(
-                  height: 300.0,
-                  autoPlay: true,
-                  enlargeCenterPage: true,
-                  aspectRatio: 16 / 9,
-                  autoPlayCurve: Curves.fastOutSlowIn,
-                  enableInfiniteScroll: true,
-                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                  viewportFraction: 0.85,
-                ),
-                items: offers.map((Offer) {
-                  return Builder(
-                    builder: (BuildContext context) {
-                      return Container(
-                        width: MediaQuery.of(context).size.width,
-                        padding: const EdgeInsets.symmetric(vertical: 24.0),
-                        margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  systemColors.primary.withValues(alpha: 0.05),
-                              spreadRadius: 0.09,
-                              blurRadius: 8,
-                              offset: const Offset(0, 0),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: CachedNetworkImage(
-                            imageUrl: Offer.imageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: systemColors.primaryGoust,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: systemColors.primary,
-                                ),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: systemColors.primaryGoust,
-                              child: Icon(
-                                Icons.error_outline,
-                                color: systemColors.primary,
-                                size: 40,
-                              ),
-                            ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 25),
+              // Logo
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: systemColors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: systemColors.primary.withValues(alpha: 0.1),
+                            spreadRadius: 1,
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }).toList(),
-              ),
-            ),
-
-            const Spacer(),
-
-            // Welcome Text
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  Text(
-                    "مرحباً بك".tr,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: systemColors.primary,
-                      fontFamily: 'Tajawal',
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.local_taxi_rounded,
+                        color: systemColors.primary,
+                        size: 30,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "إلى أين تريد الذهاب اليوم؟".tr,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: systemColors.darkGoust,
-                      fontFamily: 'Tajawal',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // New Trip Button
-            Padding(
-              padding: const EdgeInsets.only(bottom: 40, left: 20, right: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: systemColors.primary.withValues(alpha: 0.3),
-                      spreadRadius: 2,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                    const SizedBox(width: 15),
+                    Text(
+                      "مُرافق".tr,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: systemColors.primary,
+                        fontFamily: 'Tajawal',
+                      ),
                     ),
                   ],
                 ),
-                child: Obx(() => ElevatedButton(
-                      onPressed: isReady.value == true
-                          ? () {
-                              if (shared!.getBool("has_active_trip") == true) {
-                                Get.snackbar(
-                                  "لديك رحلة نشطة".tr,
-                                  "لا يمكنك طلب رحلة جديدة حتى تنتهي الرحلة الحالية"
-                                      .tr,
-                                  backgroundColor: systemColors.error,
-                                  colorText: systemColors.white,
-                                );
-                                checkTrip();
-                                return;
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const TripSelectionPage(),
-                                ),
-                              );
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: systemColors.primary,
-                        foregroundColor: systemColors.white,
-                        minimumSize: const Size(double.infinity, 60),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'رحلة جديدة'.tr,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Tajawal',
-                        ),
-                      ),
-                    )),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 30),
+
+              // Advertisements Carousel
+              Obx(
+                () => CarouselSlider(
+                  options: CarouselOptions(
+                    height: 300.0,
+                    autoPlay: true,
+                    enlargeCenterPage: true,
+                    aspectRatio: 16 / 9,
+                    autoPlayCurve: Curves.fastOutSlowIn,
+                    enableInfiniteScroll: true,
+                    autoPlayAnimationDuration:
+                        const Duration(milliseconds: 800),
+                    viewportFraction: 0.85,
+                  ),
+                  items: offers.map((Offer) {
+                    return Builder(
+                      builder: (BuildContext context) {
+                        return Container(
+                          width: MediaQuery.of(context).size.width,
+                          padding: const EdgeInsets.symmetric(vertical: 24.0),
+                          margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: systemColors.primary
+                                    .withValues(alpha: 0.05),
+                                spreadRadius: 0.09,
+                                blurRadius: 8,
+                                offset: const Offset(0, 0),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: CachedNetworkImage(
+                              imageUrl: Offer.imageUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: systemColors.primaryGoust,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: systemColors.primary,
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: systemColors.primaryGoust,
+                                child: Icon(
+                                  Icons.error_outline,
+                                  color: systemColors.primary,
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              // Welcome Text
+              const SizedBox(
+                height: 150,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    Text(
+                      "مرحباً بك".tr,
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: systemColors.primary,
+                        fontFamily: 'Tajawal',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "إلى أين تريد الذهاب اليوم؟".tr,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: systemColors.darkGoust,
+                        fontFamily: 'Tajawal',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // New Trip Button
+              Padding(
+                padding: const EdgeInsets.only(bottom: 40, left: 20, right: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: systemColors.primary.withValues(alpha: 0.3),
+                        spreadRadius: 2,
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Obx(() => ElevatedButton(
+                        onPressed: isReady.value == true
+                            ? () {
+                                if (shared!.getBool("has_active_trip") ==
+                                    true) {
+                                  Get.snackbar(
+                                    "لديك رحلة نشطة".tr,
+                                    "لا يمكنك طلب رحلة جديدة حتى تنتهي الرحلة الحالية"
+                                        .tr,
+                                    backgroundColor: systemColors.error,
+                                    colorText: systemColors.white,
+                                  );
+                                  checkTrip();
+                                  return;
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const TripSelectionPage(),
+                                  ),
+                                );
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: systemColors.primary,
+                          foregroundColor: systemColors.white,
+                          minimumSize: const Size(double.infinity, 60),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'رحلة جديدة'.tr,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Tajawal',
+                          ),
+                        ),
+                      )),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Stack _buildReword() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          height: 70, // زيادة الحجم
+          width: 70,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                systemColors.primary,
+                systemColors.primary.withValues(alpha: 0.65)
+              ],
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: systemColors.primary.withValues(alpha: 0.7),
+                spreadRadius: 3,
+                blurRadius: 5,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: CircularProgressIndicator.adaptive(
+            value: 0.5,
+            backgroundColor: Colors.white.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(systemColors.white),
+            strokeWidth: 6,
+            strokeCap: StrokeCap.round,
+          ),
+        ),
+        Text(
+          "50د",
+          style: TextStyle(
+            fontSize: 18,
+            fontFamily: 'Tajawal',
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                offset: Offset(1, 1),
+                blurRadius: 2,
+                color: Colors.black26,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

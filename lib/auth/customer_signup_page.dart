@@ -10,6 +10,7 @@ import 'package:otp_text_field/otp_field.dart';
 import 'package:otp_text_field/otp_field_style.dart';
 import 'package:otp_text_field/style.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
+import 'privacy_policy_page.dart';
 
 class CustomerSignupPage extends StatefulWidget {
   const CustomerSignupPage({Key? key}) : super(key: key);
@@ -48,6 +49,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  bool _agreeToTerms = false;
   String selectedGender = 'male'; // Default value
   final ResendTimerController _timerController =
       Get.put(ResendTimerController());
@@ -362,6 +364,35 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     },
                   ),
                   const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Checkbox(
+                        value: _agreeToTerms,
+                        onChanged: (value) {
+                          setState(() {
+                            _agreeToTerms = value ?? false;
+                          });
+                        },
+                        activeColor: systemColors.primary,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Get.to(() => const PrivacyPolicyPage());
+                        },
+                        child: Text(
+                          'الموافقة على الشروط والاحكام وسياسة الخصوصية'.tr,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey[600],
+                                    decoration: TextDecoration.underline,
+                                  ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: authController.isLoading.value
                         ? null
@@ -375,6 +406,14 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                                   snackPosition: SnackPosition.BOTTOM,
                                   backgroundColor: Colors.red,
                                   colorText: Colors.white,
+                                );
+                                return;
+                              }
+                              if (!_agreeToTerms) {
+                                Get.snackbar(
+                                  'خطأ'.tr,
+                                  'يجب الموافقة على الشروط والأحكام'.tr,
+                                  snackPosition: SnackPosition.BOTTOM,
                                 );
                                 return;
                               }

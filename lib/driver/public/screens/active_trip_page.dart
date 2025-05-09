@@ -496,22 +496,22 @@ class ActiveTripPage extends GetView<ActiveTripController> {
                                         ),
                                       ),
                                       const SizedBox(height: 12),
-                                      ElevatedButton(
-                                        onPressed: controller.cancelTrip,
-                                        child: Text("الغاء الرحلة"),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: systemColors.error,
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 12),
-                                          minimumSize:
-                                              const Size(double.infinity, 50),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      )
+                                      // ElevatedButton(
+                                      //   onPressed: controller.cancelTrip,
+                                      //   child: Text("الغاء الرحلة"),
+                                      //   style: ElevatedButton.styleFrom(
+                                      //     backgroundColor: systemColors.error,
+                                      //     foregroundColor: Colors.white,
+                                      //     padding: const EdgeInsets.symmetric(
+                                      //         horizontal: 12, vertical: 12),
+                                      //     minimumSize:
+                                      //         const Size(double.infinity, 50),
+                                      //     shape: RoundedRectangleBorder(
+                                      //       borderRadius:
+                                      //           BorderRadius.circular(10),
+                                      //     ),
+                                      //   ),
+                                      // )
                                     ],
                                   ),
                                 ),

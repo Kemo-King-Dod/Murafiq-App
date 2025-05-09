@@ -50,7 +50,7 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
           return Center(
             child: Text(
               'لا توجد رحلات سابقة'.tr,
-              style:const TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18),
             ),
           );
         }
@@ -116,8 +116,11 @@ class DriverTripHistoryPage extends GetView<DriverTripHistoryController> {
                       child: trip.startCity != trip.destinationCity
                           ? Text(
                               'رحلة من'.tr +
+                                  " " +
                                   '${trip.startCity}' +
+                                  " " +
                                   "إلى".tr +
+                                  " " +
                                   '${trip.destinationCity}',
                               style: TextStyle(
                                 fontSize: 18,

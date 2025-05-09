@@ -262,7 +262,7 @@ class DriverDetails extends StatelessWidget {
               children: [
                 Expanded(
                   child: driver.licenseImage != null
-                      ? _buildDocumentImage(driver.licenseImage!)
+                      ? _buildDocumentImage(driver.passPortImage!)
                       : _buildDocumentPlaceholder('صورة الهوية'),
                 ),
                 SizedBox(width: 16),
@@ -270,6 +270,28 @@ class DriverDetails extends StatelessWidget {
                   child: driver.licenseImage != null
                       ? _buildDocumentImage(driver.licenseImage!)
                       : _buildDocumentPlaceholder('رخصة القيادة'),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: driver.licenseImage != null
+                      ? _buildDocumentImage(driver.backLicenseImage!)
+                      : _buildDocumentPlaceholder('صورة الهوية'),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: driver.licenseImage != null
+                      ? _buildDocumentImage(driver.vehicleBookImage!)
+                      : _buildDocumentPlaceholder('كتابة السيارة'),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: driver.licenseImage != null
+                      ? _buildDocumentImage(driver.vehicleImage!)
+                      : _buildDocumentPlaceholder('صورة السيارة'),
                 ),
               ],
             ),
@@ -311,7 +333,72 @@ class DriverDetails extends StatelessWidget {
   }
 
   Widget _buildDocumentImage(String imageUrl) {
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        Get.dialog(
+          Dialog(
+            child: Container(
+              width: double.infinity,
+              height: MediaQuery.of(Get.context!).size.height * 0.8,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Get.back(),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.fullscreen),
+                          onPressed: () {
+                            Get.back();
+                            Get.to(
+                              Scaffold(
+                                appBar: AppBar(
+                                  title: const Text('عرض الصورة'),
+                                  backgroundColor: systemColors.primary,
+                                  foregroundColor: Colors.white,
+                                ),
+                                body: InteractiveViewer(
+                                  minScale: 0.5,
+                                  maxScale: 4.0,
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                        "${serverConstant.serverUrl}$imageUrl",
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: CachedNetworkImage(
+                        imageUrl: "${serverConstant.serverUrl}$imageUrl",
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      child: Container(
         height: 150,
         decoration: BoxDecoration(
           color: Colors.grey[200],
@@ -321,7 +408,9 @@ class DriverDetails extends StatelessWidget {
         child: CachedNetworkImage(
           imageUrl: "${serverConstant.serverUrl}$imageUrl",
           fit: BoxFit.cover,
-        ));
+        ),
+      ),
+    );
   }
 
   Widget _buildActionButtons(DriverDetailsController controller) {
@@ -361,7 +450,8 @@ class DriverDetails extends StatelessWidget {
                   text: 'سحب الرصيد',
                   color: systemColors.primary,
                   icon: Icons.money_off,
-                  onPressed:()=> controller.discountDriverWalletfun(balance: driver.balance)),
+                  onPressed: () => controller.discountDriverWalletfun(
+                      balance: driver.balance)),
             ],
           ),
         if (driver.status == DriverStatus.blocked)

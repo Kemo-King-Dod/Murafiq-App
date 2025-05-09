@@ -143,6 +143,10 @@ class AuthController extends GetxController {
     String? carType,
     String? identityType,
     File? identityImage,
+    File? identityImageBackFile,
+    File? bookletOfCar,
+    File? carImage,
+    File? passportImage,
   }) async {
     try {
       isLoading.value = true;
@@ -195,8 +199,30 @@ class AuthController extends GetxController {
 
         // Add file type check
         final allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+
         final fileExt = path.extension(identityImage.path).toLowerCase();
         if (!allowedExtensions.contains(fileExt)) {
+          throw Exception(
+              'Unsupported file type. Only .jpg, .jpeg, .png, .gif are allowed.');
+        }
+        final fileExt2 =
+            path.extension(identityImageBackFile!.path).toLowerCase();
+        if (!allowedExtensions.contains(fileExt2)) {
+          throw Exception(
+              'Unsupported file type. Only .jpg, .jpeg, .png, .gif are allowed.');
+        }
+        final fileExt3 = path.extension(passportImage!.path).toLowerCase();
+        if (!allowedExtensions.contains(fileExt3)) {
+          throw Exception(
+              'Unsupported file type. Only .jpg, .jpeg, .png, .gif are allowed.');
+        }
+        final fileExt4 = path.extension(bookletOfCar!.path).toLowerCase();
+        if (!allowedExtensions.contains(fileExt4)) {
+          throw Exception(
+              'Unsupported file type. Only .jpg, .jpeg, .png, .gif are allowed.');
+        }
+        final fileExt5 = path.extension(carImage!.path).toLowerCase();
+        if (!allowedExtensions.contains(fileExt5)) {
           throw Exception(
               'Unsupported file type. Only .jpg, .jpeg, .png, .gif are allowed.');
         }
@@ -205,6 +231,23 @@ class AuthController extends GetxController {
         request.files.add(await http.MultipartFile.fromPath(
           'driverLicense',
           identityImage.path,
+        ));
+        // Add file to the request
+        request.files.add(await http.MultipartFile.fromPath(
+          'passportImage',
+          passportImage.path,
+        ));
+        request.files.add(await http.MultipartFile.fromPath(
+          'backLicenseImage',
+          identityImageBackFile.path,
+        ));
+        request.files.add(await http.MultipartFile.fromPath(
+          'vehicleBookImage',
+          bookletOfCar.path,
+        ));
+        request.files.add(await http.MultipartFile.fromPath(
+          'vehicleImage',
+          carImage.path,
         ));
 
         // Send the request

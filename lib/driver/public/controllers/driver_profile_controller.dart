@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:murafiq/auth/OnboardingPage.dart';
 import 'package:murafiq/core/functions/errorHandler.dart';
+import 'package:murafiq/core/utils/systemVarible.dart';
 import 'package:murafiq/driver/public/widgets/profile_bottom_sheets.dart';
 
 enum UserType {
@@ -70,5 +72,117 @@ class DriverProfileController extends GetxController {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
     );
+  }
+
+  void deleteAccount() async {
+    // TODO: Implement account deletion
+    bool delete = false;
+    await Get.dialog(AlertDialog(
+      title: Text('حذف الحساب'),
+      content: Text('هل أنت متأكد من حذف الحساب؟'),
+      actionsAlignment: MainAxisAlignment.spaceAround,
+      actions: [
+        InkWell(
+          onTap: () {
+            delete = true;
+            Get.back();
+          },
+          child: Container(
+            alignment: Alignment.center,
+            width: 100,
+            height: 40,
+            decoration: BoxDecoration(
+              color: systemColors.primary,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              "حذف",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.white),
+            ),
+          ),
+        ),
+        InkWell(
+          onTap: () {
+            delete = false;
+            Get.back();
+          },
+          child: Container(
+            alignment: Alignment.center,
+            width: 100,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              "الغاء",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.white),
+            ),
+          ),
+        )
+      ],
+    ));
+
+    deletConfirmed() async {
+      // TODO: Implement account deletion
+      try {
+        final response = await sendRequestWithHandler(
+          endpoint: '/public/delete-profile',
+          method: 'DELETE',
+          loadingMessage: "جاري الحذف",
+        );
+        print(response.toString());
+        if (response != null && response["status"] == "success") {
+          systemUtils.logout();
+          Get.offAll(() => const OnboardingPage());
+          Get.dialog(AlertDialog(
+            title: Text("تأكيد الحذف",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                )),
+            content: Container(
+                alignment: Alignment.center,
+                height: 200,
+                width: 200,
+                child: Text(
+                  "لقد تم حذف\n الحساب بنجاح",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                )),
+            actions: [
+              InkWell(
+                onTap: () {
+                  Get.back();
+                },
+                child: Container(
+                  child: Text(
+                    "موافق",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ));
+        }
+      } catch (e) {
+        print('Error deleting account: $e');
+      }
+    }
+
+    if (delete) {
+      await deletConfirmed();
+    }
   }
 }

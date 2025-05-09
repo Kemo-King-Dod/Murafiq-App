@@ -13,8 +13,13 @@ class Driver {
   final String carNumber;
   String? profileImage;
   String? licenseImage;
+  String? passPortImage;
+  String? backLicenseImage;
+  String? vehicleBookImage;
+
+  String? vehicleImage;
   DriverStatus status;
-  double balance ;
+  double balance;
 
   Driver({
     this.status = DriverStatus.pending,
@@ -24,6 +29,10 @@ class Driver {
     required this.gender,
     required this.licenseNumber,
     required this.carNumber,
+    this.passPortImage,
+    this.backLicenseImage,
+    this.vehicleBookImage,
+    this.vehicleImage,
     this.profileImage,
     this.licenseImage,
     this.balance = 0.0,
@@ -43,6 +52,10 @@ class Driver {
       ),
       profileImage: json['profileImage']?.toString() ?? '',
       licenseImage: json['licenseImage']?.toString() ?? '',
+      passPortImage: json['passportImage']?.toString() ?? '',
+      backLicenseImage: json['backLicenseImage']?.toString() ?? '',
+      vehicleBookImage: json['vehicleBookImage']?.toString() ?? '',
+      vehicleImage: json['vehicleImage']?.toString() ?? '',
       balance: json['balance']?.toDouble() ?? 0.0,
     );
   }

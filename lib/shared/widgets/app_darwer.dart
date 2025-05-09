@@ -11,6 +11,7 @@ import 'package:murafiq/driver/private/screens/driver_wallet_page.dart';
 import 'package:murafiq/driver/public/controllers/driver_profile_controller.dart';
 import 'package:murafiq/main.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:murafiq/auth/privacy_policy_page.dart';
 
 class AppDarwer {
   static Widget buildDrawer({UserType? userType}) {
@@ -135,6 +136,15 @@ class AppDarwer {
                   onTap: () {
                     _launchURL('facebook');
                     Get.back();
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.privacy_tip_rounded,
+                  iconColor: const Color.fromARGB(255, 71, 51, 255),
+                  title: 'سياسة الخصوصية'.tr,
+                  onTap: () {
+                    Get.back();
+                    Get.to(() => const PrivacyPolicyPage());
                   },
                 ),
                 const Divider(height: 40),

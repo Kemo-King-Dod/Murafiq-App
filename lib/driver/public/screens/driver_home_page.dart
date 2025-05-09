@@ -1,22 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:murafiq/core/functions/GelocatorFun.dart';
-import 'package:murafiq/core/functions/errorHandler.dart';
 import 'package:murafiq/core/utils/systemVarible.dart';
-import 'package:murafiq/core/version/version.dart';
 import 'package:murafiq/driver/public/controllers/driver_home_controller.dart';
 import 'package:murafiq/driver/public/controllers/driver_profile_controller.dart';
-import 'package:murafiq/main.dart';
 import 'package:murafiq/models/trip.dart';
-import 'package:murafiq/driver/public/screens/active_trip_page.dart';
 
 import 'package:murafiq/shared/widgets/app_darwer.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../auth/auth_controller.dart';
 import '../../../core/services/trip_service.dart';
 
 class DriverHomePage extends StatelessWidget {
@@ -38,7 +28,7 @@ class DriverHomePage extends StatelessWidget {
             children: [
               // زر فتح القائمة
               Obx(
-                () => Container(
+                () => SizedBox(
                   width: Get.width,
                   child: Row(
                     spacing: 5,
@@ -75,7 +65,7 @@ class DriverHomePage extends StatelessWidget {
                                 height: 30,
                                 alignment: Alignment.center,
                                 width: Get.width / 1.5,
-                                margin: EdgeInsets.only(bottom: 16),
+                                margin: const EdgeInsets.only(bottom: 16),
                                 decoration: BoxDecoration(
                                   color: getStatusColor(
                                           TripService.driverStatus.value)
@@ -90,11 +80,11 @@ class DriverHomePage extends StatelessWidget {
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: getStatusColor(
-                                          TripService.driverStatus.value!)),
+                                          TripService.driverStatus.value)),
                                 ),
                               ),
                             ),
-                      Spacer()
+                      const Spacer()
                     ],
                   ),
                 ),
@@ -120,18 +110,18 @@ class DriverHomePage extends StatelessWidget {
                   title: Row(
                     children: [
                       Text('وضع السائق'.tr, style: systemTextStyle.mediumDark),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Obx(() => Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: controller.socketController.socket
                                       .isConnecting.value
-                                  ? Colors.orange.withOpacity(0.1)
+                                  ? Colors.orange.withValues(alpha: 0.1)
                                   : controller.socketController.socket
                                           .isConnected.value
-                                      ? Colors.green.withOpacity(0.1)
-                                      : Colors.red.withOpacity(0.1),
+                                      ? Colors.green.withValues(alpha: 0.1)
+                                      : Colors.red.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -164,6 +154,9 @@ class DriverHomePage extends StatelessWidget {
                       )),
                 ),
               ),
+              const SizedBox(
+                height: 20,
+              ),
 
               // محتوى الصفحة
               Expanded(
@@ -195,7 +188,7 @@ class DriverHomePage extends StatelessWidget {
   }
 
   Widget _buildOfflineState() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -215,7 +208,7 @@ class DriverHomePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
+          SizedBox(
             width: 250,
             child: Text(
               'قم بتفعيل وضع الاستقبال للبدء في استقبال الطلبات'.tr,
@@ -232,7 +225,7 @@ class DriverHomePage extends StatelessWidget {
   }
 
   Widget _buildWaitingState() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -273,7 +266,7 @@ class DriverHomePage extends StatelessWidget {
               // Handle the tap event
               controller.refreshTrips();
             },
-            child: Container(
+            child: SizedBox(
               width: 250,
               child: Text(
                 'سيتم إشعارك فور وصول طلب جديد في منطقتك'.tr,
@@ -422,7 +415,8 @@ class DriverHomePage extends StatelessWidget {
                 launchUrl(url, mode: LaunchMode.externalApplication);
               },
               icon: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
                 decoration: BoxDecoration(
                   color: systemColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
@@ -585,6 +579,57 @@ class DriverHomePage extends StatelessWidget {
       ],
     );
   }
+
+  // Stack _buildReword() {
+  //   return Stack(
+  //     alignment: Alignment.center,
+  //     children: [
+  //       Container(
+  //         height: 70, // زيادة الحجم
+  //         width: 70,
+  //         decoration: BoxDecoration(
+  //           shape: BoxShape.circle,
+  //           gradient: LinearGradient(
+  //             colors: [systemColors.primary,systemColors.primary.withValues(alpha: 0.65)],
+  //             begin: Alignment.topRight,
+  //             end: Alignment.bottomLeft,
+  //           ),
+  //           boxShadow: [
+  //             BoxShadow(
+  //               color: systemColors.primary.withValues(alpha:0.7),
+  //               spreadRadius: 3,
+  //               blurRadius: 5,
+  //               offset: Offset(0, 2),
+  //             ),
+  //           ],
+  //         ),
+  //         child: CircularProgressIndicator.adaptive(
+  //           value: 0.5,
+  //           backgroundColor: Colors.white.withValues(alpha:0.3),
+  //           valueColor: AlwaysStoppedAnimation<Color>(systemColors.white),
+  //           strokeWidth: 6,
+  //           strokeCap: StrokeCap.round,
+  //         ),
+  //       ),
+  //       Text(
+  //         "50د",
+  //         style: TextStyle(
+  //           fontSize: 18,
+  //           fontFamily: 'Tajawal',
+  //           fontWeight: FontWeight.bold,
+  //           color: Colors.white,
+  //           shadows: [
+  //             Shadow(
+  //               offset: Offset(1, 1),
+  //               blurRadius: 2,
+  //               color: Colors.black26,
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Color getStatusColor(String status) {
     switch (status) {

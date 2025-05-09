@@ -93,6 +93,14 @@ class DriverProfilePage extends GetView<DriverProfileController> {
                 _buildProfileActionButtons(),
                 const SizedBox(height: 16),
                 _buildProfileStatistics(),
+                const SizedBox(height: 16),
+                const SizedBox(height: 10),
+                _buildGlassButton(
+                  onPressed: controller.deleteAccount,
+                  icon: Icons.delete,
+                  label: 'حذف الحساب'.tr,
+                  primaryColor: Colors.red,
+                ),
               ]),
             ),
           ),
@@ -255,12 +263,12 @@ class DriverProfilePage extends GetView<DriverProfileController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildGlassButton(
-          onPressed: controller.editProfile,
-          icon: Icons.edit,
-          label: 'تعديل الملف'.tr,
-          primaryColor: systemColors.primary,
-        ),
+        // _buildGlassButton(
+        //   onPressed: controller.editProfile,
+        //   icon: Icons.edit,
+        //   label: 'تعديل الملف'.tr,
+        //   primaryColor: systemColors.primary,
+        // ),
         const SizedBox(height: 10),
         _buildGlassButton(
           onPressed: controller.changePassword,
